@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mine Blocks Sprite Slicer</title>
+<style>
+    @font-face {
+        font-family: 'Rainy Hearts';
+        src: url('rainyhearts.ttf') format('truetype');
+    }
+    
+    body {
+        background-color: #1e1e1e;
+        color: #ffffff;
+        font-family: 'Rainy Hearts', monospace, sans-serif;
+        font-size: 18px;
+        margin: 0;
+        padding: 20px;
+        line-height: 1.4;
+    }
+
+    .mc-ui {
+        background-color: #2b2b2b;
+        border: 4px solid;
+        border-color: #5a5a5a #111111 #111111 #5a5a5a;
+        color: #ffffff;
+        padding: 20px;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .mc-ui-inset {
+        background-color: #1e1e1e;
+        border: 4px solid;
+        border-color: #111111 #5a5a5a #5a5a5a #111111;
+        padding: 10px;
+    }
+
+    h1 {
+        margin-top: 0;
+        text-transform: uppercase;
+        font-size: 28px;
+        border-bottom: 2px solid #111111;
+        padding-bottom: 10px;
+        color: #55ff55;
+        text-align: center;
+    }
+
+    .mc-btn {
+        background-color: #404040;
+        border: 4px solid;
+        border-color: #7a7a7a #111111 #111111 #7a7a7a;
+        color: #ffffff;
+        padding: 10px 20px;
+        font-family: 'Rainy Hearts', sans-serif;
+        font-size: 20px;
+        cursor: pointer;
+        text-transform: uppercase;
+        text-shadow: 2px 2px 0 #111111;
+        transition: transform 0.05s, border-color 0.05s;
+    }
+    .mc-btn:active {
+        border-color: #111111 #7a7a7a #7a7a7a #111111;
+        transform: translate(2px, 2px);
+    }
+    .mc-btn:disabled {
+        color: #888;
+        cursor: not-allowed;
+    }
+
+    input[type="text"], input[type="file"] {
+        background-color: #111111;
+        color: #ffffff;
+        border: 2px solid;
+        border-color: #000000 #5a5a5a #5a5a5a #000000;
+        padding: 10px;
+        font-family: 'Rainy Hearts', sans-serif;
+        font-size: 18px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    input[type="file"] {
+        cursor: pointer;
+    }
+
+    .toolbar {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        align-items: flex-end;
+    }
+
+    .input-group {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .input-group label {
+        font-weight: bold;
+        color: #ddd;
+    }
+
+    .editor-container {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+    }
+
+    .canvas-wrapper {
+        flex: 1;
+        overflow: auto;
+        max-height: 60vh;
+        background-image: 
+            linear-gradient(45deg, #181818 25%, transparent 25%, transparent 75%, #181818 75%, #181818), 
+            linear-gradient(45deg, #181818 25%, transparent 25%, transparent 75%, #181818 75%, #181818);
+        background-size: 20px 20px;
+        background-position: 0 0, 10px 10px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+
+    #spritesheet-canvas {
+        image-rendering: pixelated;
+        cursor: crosshair;
+        /* Hacemos la escala x2 visualmente para que sea más fácil hacer clic */
+        transform: scale(2);
+        transform-origin: top center;
+        margin: 20px;
+    }
+
+    .side-panel {
+        width: 200px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .preview-box {
+        width: 128px;
+        height: 128px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-image: 
+            linear-gradient(45deg, #181818 25%, transparent 25%, transparent 75%, #181818 75%, #181818), 
+            linear-gradient(45deg, #181818 25%, transparent 25%, transparent 75%, #181818 75%, #181818);
+        background-size: 16px 16px;
+        background-position: 0 0, 8px 8px;
+    }
+
+    #preview-canvas {
+        width: 128px; /* Escala visual 8x (16 * 8 = 128) */
+        height: 128px;
+        image-rendering: pixelated;
+    }
+
+    .info-text {
+        font-size: 16px;
+        color: #aaaaaa;
+        text-align: center;
+    }
+
+</style>
+</head>
+<body>
+
+<div class="mc-ui">
+    <h1>Sprite Slicer (16x16)</h1>
+
+    <div class="toolbar">
+        <div class="input-group">
+            <label>1. Cargar Spritesheet</label>
+            <input type="file" id="file-upload" accept="image/png, image/jpeg">
+        </div>
+        
+        <div class="input-group">
+            <label>2. ID del Item / Bloque</label>
+            <!-- input "list" conecta este campo con el datalist para el buscador de IDs -->
+            <input type="text" id="filename-input" list="identifiers-list" placeholder="Ej: diamond_sword">
+        </div>
+
+        <button id="download-btn" class="mc-btn" disabled>Descargar</button>
+    </div>
+
+    <div class="editor-container">
+        <!-- Contenedor del spritesheet -->
+        <div class="canvas-wrapper mc-ui-inset">
+            <canvas id="spritesheet-canvas"></canvas>
+        </div>
+
+        <!-- Panel lateral para vista previa -->
+        <div class="side-panel mc-ui-inset">
+            <label style="font-weight:bold;">Preview</label>
+            <div class="preview-box">
+                <!-- Este canvas siempre medirá 16x16 internamente, pero CSS lo agranda -->
+                <canvas id="preview-canvas" width="16" height="16"></canvas>
+            </div>
+            <div class="info-text" id="coord-display">X: 0, Y: 0</div>
+            <div class="info-text">Haz clic en el cuadro para seleccionarlo.</div>
+        </div>
+    </div>
+</div>
+
+<!-- Datalist gigante con los Identifiers de Mine Blocks -->
+<datalist id="identifiers-list">
+    <!-- Items / Básicos -->
+    <option value="acid"><option value="apple"><option value="arrow"><option value="bamboo"><option value="bed"><option value="bedrock"><option value="bone"><option value="book"><option value="bow"><option value="bread"><option value="bucket"><option value="bucket_water"><option value="bucket_lava"><option value="bucket_milk"><option value="cake"><option value="carrot"><option value="chest"><option value="clay"><option value="coal"><option value="cobblestone"><option value="diamond"><option value="diamond_sword"><option value="diamond_pickaxe"><option value="diamond_axe"><option value="diamond_shovel"><option value="diamond_helmet"><option value="diamond_chestplate"><option value="diamond_leggings"><option value="diamond_boots"><option value="dirt"><option value="egg"><option value="feather"><option value="flint"><option value="flint_and_steel"><option value="furnace"><option value="glass"><option value="gold_ingot"><option value="golden_apple"><option value="iron_ingot"><option value="iron_sword"><option value="iron_pickaxe"><option value="leather"><option value="leather_cap"><option value="leather_tunic"><option value="leather_pants"><option value="leather_boots"><option value="porkchop"><option value="porkchop_cooked"><option value="potato"><option value="potato_baked"><option value="redstone"><option value="snowball"><option value="stick"><option value="stone"><option value="string"><option value="wood"><option value="wooden_planks"><option value="wool">
+    <!-- Bloques extra -->
+    <option value="grass"><option value="sand"><option value="gravel"><option value="gold_ore"><option value="iron_ore"><option value="coal_ore"><option value="leaves"><option value="sponge"><option value="lapis_ore"><option value="lapis_block"><option value="dispenser"><option value="sandstone"><option value="note_block"><option value="powered_rail"><option value="detector_rail"><option value="sticky_piston"><option value="cobweb"><option value="tallgrass"><option value="deadbush"><option value="piston"><option value="dandelion"><option value="rose"><option value="brown_mushroom"><option value="red_mushroom"><option value="gold_block"><option value="iron_block"><option value="double_stone_slab"><option value="stone_slab"><option value="brick_block"><option value="tnt"><option value="bookshelf"><option value="mossy_cobblestone"><option value="obsidian"><option value="torch"><option value="fire"><option value="mob_spawner"><option value="oak_stairs"><option value="redstone_wire"><option value="diamond_ore"><option value="diamond_block"><option value="crafting_table"><option value="wheat"><option value="farmland"><option value="sign"><option value="wooden_door"><option value="ladder"><option value="rail"><option value="cobblestone_stairs"><option value="lever"><option value="stone_pressure_plate"><option value="iron_door"><option value="wooden_pressure_plate"><option value="redstone_ore"><option value="stone_button"><option value="ice"><option value="snow"><option value="cactus"><option value="sugar_cane"><option value="fence"><option value="pumpkin"><option value="netherrack"><option value="soul_sand"><option value="glowstone"><option value="jack_o_lantern"><option value="trapdoor"><option value="stonebrick"><option value="iron_bars"><option value="glass_pane"><option value="melon_block"><option value="vine"><option value="fence_gate"><option value="mycelium"><option value="lily_pad"><option value="nether_brick"><option value="nether_wart"><option value="enchanting_table"><option value="brewing_stand"><option value="end_portal"><option value="end_stone"><option value="dragon_egg"><option value="redstone_lamp">
+</datalist>
+
+<script>
+    const fileUpload = document.getElementById('file-upload');
+    const mainCanvas = document.getElementById('spritesheet-canvas');
+    const mainCtx = mainCanvas.getContext('2d', { willReadFrequently: true });
+    
+    const previewCanvas = document.getElementById('preview-canvas');
+    const previewCtx = previewCanvas.getContext('2d');
+    
+    const downloadBtn = document.getElementById('download-btn');
+    const filenameInput = document.getElementById('filename-input');
+    const coordDisplay = document.getElementById('coord-display');
+
+    let img = new Image();
+    let hoverX = -1;
+    let hoverY = -1;
+    let selectedX = -1;
+    let selectedY = -1;
+    const GRID_SIZE = 16;
+
+    // Cuando se sube un archivo
+    fileUpload.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            img.onload = function() {
+                mainCanvas.width = img.width;
+                mainCanvas.height = img.height;
+                selectedX = -1;
+                selectedY = -1;
+                drawMainCanvas();
+            }
+            img.src = event.target.result;
+        }
+        reader.readAsDataURL(file);
+    });
+
+    // Calcula coordenadas exactas compensando la escala CSS y bordes
+    function getCanvasCoordinates(e) {
+        const rect = mainCanvas.getBoundingClientRect();
+        // El canvas tiene transform: scale(2), por lo que debemos calcular la escala real
+        const scaleX = mainCanvas.width / rect.width;
+        const scaleY = mainCanvas.height / rect.height;
+        
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+
+        return {
+            x: Math.floor(x / GRID_SIZE) * GRID_SIZE,
+            y: Math.floor(y / GRID_SIZE) * GRID_SIZE
+        };
+    }
+
+    // Interacción del ratón
+    mainCanvas.addEventListener('mousemove', function(e) {
+        if (!img.src) return;
+        const coords = getCanvasCoordinates(e);
+        
+        // Evitar redibujar si no nos hemos movido de celda
+        if (hoverX !== coords.x || hoverY !== coords.y) {
+            hoverX = coords.x;
+            hoverY = coords.y;
+            drawMainCanvas();
+        }
+    });
+
+    mainCanvas.addEventListener('mouseleave', function() {
+        hoverX = -1;
+        hoverY = -1;
+        drawMainCanvas();
+    });
+
+    mainCanvas.addEventListener('click', function(e) {
+        if (!img.src) return;
+        const coords = getCanvasCoordinates(e);
+        
+        // Evitar seleccionar fuera de los límites de la imagen
+        if (coords.x >= 0 && coords.x < img.width && coords.y >= 0 && coords.y < img.height) {
+            selectedX = coords.x;
+            selectedY = coords.y;
+            coordDisplay.textContent = `X: ${selectedX}, Y: ${selectedY}`;
+            
+            updatePreview();
+            drawMainCanvas();
+            downloadBtn.disabled = false;
+        }
+    });
+
+    // Función principal de dibujado
+    function drawMainCanvas() {
+        if (!img.src) return;
+        mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+        
+        // Dibujar la imagen base
+        mainCtx.drawImage(img, 0, 0);
+
+        // Cuadrícula global semi-transparente (Opcional, la he quitado para no saturar, pero si quieres la puedes añadir aquí)
+        
+        // Dibujar resaltado de Hover (Blanco semi-transparente)
+        if (hoverX >= 0 && hoverY >= 0 && hoverX < img.width && hoverY < img.height) {
+            mainCtx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            mainCtx.fillRect(hoverX, hoverY, GRID_SIZE, GRID_SIZE);
+        }
+
+        // Dibujar recuadro de Selección (Borde Rojo vibrante)
+        if (selectedX >= 0 && selectedY >= 0) {
+            mainCtx.strokeStyle = '#ff5555';
+            mainCtx.lineWidth = 1; // 1px real en el canvas
+            mainCtx.strokeRect(selectedX + 0.5, selectedY + 0.5, GRID_SIZE - 1, GRID_SIZE - 1);
+            
+            // Fondo ligeramente tintado para la selección
+            mainCtx.fillStyle = 'rgba(255, 85, 85, 0.2)';
+            mainCtx.fillRect(selectedX, selectedY, GRID_SIZE, GRID_SIZE);
+        }
+    }
+
+    // Actualiza el cuadrito de 16x16 de la derecha
+    function updatePreview() {
+        previewCtx.clearRect(0, 0, GRID_SIZE, GRID_SIZE);
+        if (selectedX >= 0 && selectedY >= 0) {
+            // Recorta los pixeles exactos del mainCanvas (sin las líneas rojas porque sacamos del img original)
+            previewCtx.drawImage(
+                img, 
+                selectedX, selectedY, GRID_SIZE, GRID_SIZE, // Origen
+                0, 0, GRID_SIZE, GRID_SIZE // Destino
+            );
+        }
+    }
+
+    // Descargar el bloque seleccionado
+    downloadBtn.addEventListener('click', function() {
+        if (selectedX < 0 || selectedY < 0) return;
+
+        // Crear nombre del archivo
+        let baseName = filenameInput.value.trim();
+        if (baseName === "") {
+            baseName = "sprite";
+        }
+        
+        // Forzamos a terminar en .png si el usuario no lo puso
+        if (!baseName.toLowerCase().endsWith('.png')) {
+            baseName += ".png";
+        }
+
+        // Para evitar descargar el borde rojo, extraemos la imagen directamente de previewCanvas (que toma pixels de 'img')
+        const dataURL = previewCanvas.toDataURL("image/png");
+
+        // Crear elemento a temporal para forzar la descarga
+        const a = document.createElement('a');
+        a.href = dataURL;
+        a.download = baseName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    });
+
+</script>
+
+</body>
+</html>
