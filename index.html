@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mine Blocks Command Generator</title>
+<style>
+    @font-face {
+        font-family: 'Minecraftia';
+        src: url('https://cdn.rawgit.com/South-Paw/typeface-minecraft/master/Minecraftia-Regular.woff2') format('woff2');
+    }
+    body {
+        background-color: #2b2b2b;
+        color: white;
+        font-family: 'Minecraftia', sans-serif;
+        margin: 0;
+        padding: 20px;
+    }
+    /* Estilos base de la interfaz de Minecraft */
+    .mc-ui {
+        background-color: #c6c6c6;
+        border: 4px solid;
+        border-color: #ffffff #555555 #555555 #ffffff;
+        color: #373737;
+        padding: 16px;
+    }
+    .mc-btn {
+        background-color: #8b8b8b;
+        border: 4px solid;
+        border-color: #ffffff #555555 #555555 #ffffff;
+        color: white;
+        text-shadow: 2px 2px 0 #373737;
+        padding: 8px 16px;
+        font-family: 'Minecraftia', sans-serif;
+        cursor: pointer;
+        text-transform: uppercase;
+    }
+    .mc-btn:active {
+        border-color: #555555 #ffffff #ffffff #555555;
+    }
+    input, select {
+        background-color: #000000;
+        color: #ffffff;
+        border: 2px solid;
+        border-color: #555555 #ffffff #ffffff #555555;
+        padding: 6px;
+        font-family: 'Minecraftia', sans-serif;
+        margin-top: 4px;
+        margin-bottom: 10px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    input[type="checkbox"] {
+        width: auto;
+    }
+    .main-container {
+        display: flex;
+        gap: 20px;
+        max-width: 1000px;
+        margin: auto;
+    }
+    /* Dos Columnas */
+    .left-col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+    .right-col {
+        flex: 2;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+    .preview-box {
+        width: 160px;
+        height: 160px;
+        background-color: #8b8b8b;
+        border: 4px solid;
+        border-color: #373737 #ffffff #ffffff #373737;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .preview-box img {
+        max-width: 100%;
+        max-height: 100%;
+        image-rendering: pixelated; /* Para que no se vea borroso el pixel art */
+    }
+    
+    /* Estilos del Modal de Inventario */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.7);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+    }
+    .modal-content {
+        width: 600px;
+        max-width: 90%;
+    }
+    .tabs {
+        display: flex;
+        gap: 2px;
+        margin-bottom: -4px;
+    }
+    .tab {
+        background-color: #8b8b8b;
+        border: 4px solid;
+        border-color: #ffffff #555555 #000000 #ffffff;
+        border-bottom: none;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-family: 'Minecraftia', sans-serif;
+        z-index: 1;
+        color: white;
+        text-shadow: 2px 2px 0 #373737;
+    }
+    .tab.active {
+        background-color: #c6c6c6;
+        border-bottom: 4px solid #c6c6c6;
+        color: #373737;
+        text-shadow: none;
+    }
+    .inventory-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+        gap: 8px;
+        padding: 16px;
+        background-color: #c6c6c6;
+        border: 4px solid;
+        border-color: #ffffff #555555 #555555 #ffffff;
+    }
+    .inv-slot {
+        width: 64px;
+        height: 64px;
+        background-color: #8b8b8b;
+        border: 4px solid;
+        border-color: #373737 #ffffff #ffffff #373737;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .inv-slot:hover {
+        background-color: #a0a0a0;
+    }
+    .inv-slot img {
+        width: 48px;
+        height: 48px;
+        image-rendering: pixelated;
+    }
+    
+    /* Layout dinámico de inputs */
+    .command-output {
+        margin-top: 20px;
+        background: #000;
+        color: #55ff55;
+        padding: 15px;
+        border: 4px solid #555;
+        font-family: monospace;
+        word-wrap: break-word;
+        font-size: 16px;
+    }
+    .drop-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    .drop-row select { margin: 0; flex: 2; }
+    .drop-row input { margin: 0; flex: 1; }
+    .drop-row button { margin: 0; padding: 6px; }
+    
+    .conditional-group { display: none; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px dashed #8b8b8b;}
+    label { display: block; margin-top: 10px; font-weight: bold;}
+    .inline-label { display: inline; margin-top: 0; font-weight: normal;}
+</style>
+</head>
+<body>
+
+<div class="main-container">
+    <!-- COLUMNA IZQUIERDA: Preview del Mob -->
+    <div class="left-col mc-ui">
+        <h2>Mob Target</h2>
+        <div class="preview-box">
+            <!-- La imagen buscará localmente en la carpeta mobs/ -->
+            <img id="mob-preview-img" src="mobs/pig.png" alt="Preview">
+        </div>
+        <h3 id="mob-name-display" style="text-transform: uppercase;">pig</h3>
+        <button class="mc-btn" onclick="openInventory()">Cambiar Mob</button>
+    </div>
+
+    <!-- COLUMNA DERECHA: Opciones -->
+    <div class="right-col mc-ui">
+        <h2>Atributos & Tags</h2>
+        
+        <label>Custom Name:</label>
+        <input type="text" id="inp-name" placeholder="Crystal" oninput="generateCommand()">
+        
+        <label>Health:</label>
+        <input type="number" id="inp-health" placeholder="20" oninput="generateCommand()">
+        
+        <label><input type="checkbox" id="inp-defaultDrops" class="inline-label" checked onchange="generateCommand()"> Default Drops</label>
+        <br>
+        <label><input type="checkbox" id="inp-onFire" class="inline-label" onchange="generateCommand()"> On Fire</label>
+        
+        <!-- Opciones Condicionales -->
+        <div id="group-holding" class="conditional-group">
+            <label>Holding (Item ID):</label>
+            <input type="text" id="inp-holding" placeholder="diamond_sword" oninput="generateCommand()">
+        </div>
+        
+        <div id="group-armor" class="conditional-group">
+            <label><input type="checkbox" id="inp-armor-enable" class="inline-label" onchange="generateCommand()"> Equipar Armadura</label>
+            <div style="margin-left: 20px; margin-top:10px;">
+                <label>Helmet:</label>
+                <select id="inp-helmet" onchange="generateCommand()">
+                    <option value="">(Ninguno)</option>
+                    <option value="leather_cap">leather_cap</option>
+                    <option value="iron_helmet">iron_helmet</option>
+                    <option value="gold_helmet">gold_helmet</option>
+                    <option value="diamond_helmet">diamond_helmet</option>
+                    <option value="dragon_scale_helmet">dragon_scale_helmet</option>
+                </select>
+                <label>Chestplate:</label>
+                <select id="inp-chestplate" onchange="generateCommand()">
+                    <option value="">(Ninguno)</option>
+                    <option value="leather_tunic">leather_tunic</option>
+                    <option value="iron_chestplate">iron_chestplate</option>
+                    <option value="gold_chestplate">gold_chestplate</option>
+                    <option value="diamond_chestplate">diamond_chestplate</option>
+                    <option value="dragon_scale_chestplate">dragon_scale_chestplate</option>
+                </select>
+                <label>Leggings:</label>
+                <select id="inp-leggings" onchange="generateCommand()">
+                    <option value="">(Ninguno)</option>
+                    <option value="leather_pants">leather_pants</option>
+                    <option value="iron_leggings">iron_leggings</option>
+                    <option value="gold_leggings">gold_leggings</option>
+                    <option value="diamond_leggings">diamond_leggings</option>
+                    <option value="dragon_scale_leggings">dragon_scale_leggings</option>
+                </select>
+                <label>Boots:</label>
+                <select id="inp-boots" onchange="generateCommand()">
+                    <option value="">(Ninguno)</option>
+                    <option value="leather_boots">leather_boots</option>
+                    <option value="iron_boots">iron_boots</option>
+                    <option value="gold_boots">gold_boots</option>
+                    <option value="diamond_boots">diamond_boots</option>
+                    <option value="dragon_scale_boots">dragon_scale_boots</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="group-aggro" class="conditional-group">
+            <label>Aggro (Comportamiento):</label>
+            <select id="inp-aggro" onchange="generateCommand()">
+                <option value="neutral">neutral</option>
+                <option value="hostile">hostile</option>
+                <option value="passive">passive</option>
+            </select>
+        </div>
+
+        <div id="group-skin" class="conditional-group">
+            <label>Skin ID:</label>
+            <input type="number" id="inp-skin" placeholder="1" oninput="generateCommand()">
+        </div>
+
+        <div id="group-charged" class="conditional-group">
+            <label><input type="checkbox" id="inp-charged" class="inline-label" onchange="generateCommand()"> Charged</label>
+        </div>
+
+        <div id="group-baby" class="conditional-group">
+            <label><input type="checkbox" id="inp-baby" class="inline-label" onchange="generateCommand()"> Baby</label>
+        </div>
+
+        <div id="group-color" class="conditional-group">
+            <label>Color:</label>
+            <select id="inp-color" onchange="generateCommand()">
+                <option value="">(Por defecto)</option>
+                <option value="red">red</option><option value="green">green</option>
+                <option value="blue">blue</option><option value="cyan">cyan</option>
+                <option value="lightblue">lightblue</option><option value="lightgreen">lightgreen</option>
+                <option value="magenta">magenta</option><option value="orange">orange</option>
+                <option value="pink">pink</option><option value="purple">purple</option>
+                <option value="white">white</option><option value="yellow">yellow</option>
+                <option value="lightgray">lightgray</option><option value="gray">gray</option>
+                <option value="black">black</option>
+            </select>
+        </div>
+
+        <div id="group-sheared" class="conditional-group">
+            <label><input type="checkbox" id="inp-sheared" class="inline-label" onchange="generateCommand()"> Sheared</label>
+        </div>
+
+        <!-- Drops Personalizados -->
+        <div style="margin-top: 20px;">
+            <h3>Loot Drops Personalizados</h3>
+            <div id="drops-container"></div>
+            <button class="mc-btn" onclick="addDrop()">+ Añadir Drop</button>
+        </div>
+
+        <div class="command-output" id="output-command">
+            /summon pig 1 ~ ~
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Inventario (Minecraft UI) -->
+<div id="inv-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('Animals', this)">Animals</div>
+            <div class="tab" onclick="switchTab('Overworld', this)">Overworld</div>
+            <div class="tab" onclick="switchTab('Nether', this)">Nether</div>
+            <div class="tab" onclick="switchTab('End', this)">End</div>
+        </div>
+        <div class="inventory-grid" id="inv-grid">
+            <!-- Slots generados automáticamente -->
+        </div>
+        <div style="text-align: right; margin-top: 10px;">
+            <button class="mc-btn" onclick="closeInventory()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Listados de Mobs por categoría
+    const mobsData = {
+        Animals: ['pig', 'cow', 'sheep', 'chicken', 'squid', 'rabbit', 'bat', 'dog', 'mooshroom', 'cowctus'],
+        Overworld: ['zombie', 'creeper', 'skeleton', 'spider', 'slime', 'wolf', 'snow_golem', 'spawnskin'],
+        Nether: ['zombie_pigman', 'ghast', 'blaze', 'magma_cube', 'nethereye'],
+        End: ['enderman', 'ender_dragon']
+    };
+
+    // Identificadores de items de la wiki para los Drops
+    const identifiers = ["acid", "rail_activator", "afro", "air", "anvil", "apple", "apple_juice", "arrow", "potato_baked", "balloon", "bamboo", "bamboo_block", "bed", "bedrock", "beetroot", "blaze_powder", "blaze_rod", "bone", "bone_block", "book", "bookshelf", "bottle_of_enchanting", "bow", "bowl", "bread", "brewing_stand", "brick", "brown_mushroom", "bucket_lava", "bucket_milk", "bucket_water", "button", "cactus", "cake", "carpet", "carrot", "chest", "clay", "clock", "coal", "coal_block", "coal_ore", "cobblestone", "cobweb", "cocoa_bean", "command_book", "compass", "bacon_cooked", "chicken_cooked", "porkchop_cooked", "cookie", "diamond", "diamond_axe", "diamond_boots", "diamond_chestplate", "diamond_helmet", "diamond_hoe", "diamond_leggings", "diamond_pickaxe", "diamond_shovel", "diamond_sword", "dirt", "dispenser", "dropper", "dye", "egg", "enchantment_table", "ender_pearl", "eye_of_ender", "feather", "fishing_rod", "flint", "flint_and_steel", "furnace", "glass", "glowstone_dust", "gold_block", "gold_ingot", "golden_apple", "iron_ingot", "iron_pickaxe", "iron_sword", "leather", "porkchop", "string", "stick", "stone", "wood", "wooden_pickaxe", "wool"];
+
+    let selectedMob = 'pig';
+
+    function init() {
+        switchTab('Animals', document.querySelector('.tab'));
+        updateVisibility();
+        generateCommand();
+    }
+
+    /* Lógica del Inventario de Mobs */
+    function openInventory() {
+        document.getElementById('inv-modal').style.display = 'flex';
+    }
+
+    function closeInventory() {
+        document.getElementById('inv-modal').style.display = 'none';
+    }
+
+    function switchTab(category, element) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        if(element) element.classList.add('active');
+
+        const grid = document.getElementById('inv-grid');
+        grid.innerHTML = '';
+        
+        mobsData[category].forEach(mob => {
+            const slot = document.createElement('div');
+            slot.className = 'inv-slot';
+            slot.title = mob;
+            slot.onclick = () => selectMob(mob);
+            
+            const img = document.createElement('img');
+            img.src = `mobs/${mob}.png`;
+            img.alt = mob;
+            // Fallback en caso de que aún no tengas un PNG en la carpeta local
+            img.onerror = () => { img.style.display = 'none'; slot.textContent = mob.substring(0,3); };
+            
+            slot.appendChild(img);
+            grid.appendChild(slot);
+        });
+    }
+
+    function selectMob(mob) {
+        selectedMob = mob;
+        document.getElementById('mob-preview-img').src = `mobs/${mob}.png`;
+        document.getElementById('mob-name-display').textContent = mob;
+        closeInventory();
+        updateVisibility();
+        generateCommand();
+    }
+
+    /* Mostrar / Ocultar parámetros en función del Mob elegido */
+    function updateVisibility() {
+        const mob = selectedMob;
+        document.getElementById('group-holding').style.display = ['enderman', 'zombie_pigman'].includes(mob) ? 'block' : 'none';
+        document.getElementById('group-armor').style.display = ['zombie', 'spawnskin'].includes(mob) ? 'block' : 'none';
+        document.getElementById('group-aggro').style.display = (mob === 'spawnskin') ? 'block' : 'none';
+        document.getElementById('group-skin').style.display = (mob === 'spawnskin') ? 'block' : 'none';
+        document.getElementById('group-charged').style.display = (mob === 'creeper') ? 'block' : 'none';
+        document.getElementById('group-baby').style.display = ['chicken', 'sheep', 'rabbit', 'pig', 'wolf', 'cow', 'mooshroom', 'cowctus'].includes(mob) ? 'block' : 'none';
+        document.getElementById('group-color').style.display = ['sheep', 'dog'].includes(mob) ? 'block' : 'none';
+        document.getElementById('group-sheared').style.display = (mob === 'sheep') ? 'block' : 'none';
+    }
+
+    /* Lógica de los Drops */
+    function addDrop() {
+        const container = document.getElementById('drops-container');
+        const row = document.createElement('div');
+        row.className = 'drop-row';
+        
+        const select = document.createElement('select');
+        select.className = 'drop-id';
+        select.onchange = generateCommand;
+        
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = "";
+        defaultOpt.textContent = "Selecciona un item...";
+        select.appendChild(defaultOpt);
+        
+        identifiers.forEach(id => {
+            const opt = document.createElement('option');
+            opt.value = id;
+            opt.textContent = id;
+            select.appendChild(opt);
+        });
+        
+        const qtyLabel = document.createElement('label');
+        qtyLabel.textContent = 'Quantity:';
+        qtyLabel.className = 'inline-label';
+        
+        const qty = document.createElement('input');
+        qty.type = 'number';
+        qty.className = 'drop-qty';
+        qty.value = 1;
+        qty.min = 1;
+        qty.oninput = generateCommand;
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = 'X';
+        removeBtn.className = 'mc-btn';
+        removeBtn.onclick = () => { row.remove(); generateCommand(); };
+        
+        row.appendChild(select);
+        row.appendChild(qtyLabel);
+        row.appendChild(qty);
+        row.appendChild(removeBtn);
+        container.appendChild(row);
+        generateCommand();
+    }
+
+    /* Generación en Tiempo Real del Comando */
+    function generateCommand() {
+        let tags = [];
+        
+        const name = document.getElementById('inp-name').value;
+        if (name) tags.push(`name:"${name}"`);
+        
+        const health = document.getElementById('inp-health').value;
+        if (health) tags.push(`health:${health}`);
+        
+        const defaultDrops = document.getElementById('inp-defaultDrops').checked;
+        tags.push(`defaultDrops:${defaultDrops}`);
+        
+        const onFire = document.getElementById('inp-onFire').checked;
+        if (onFire) tags.push(`onFire:true`);
+        
+        if (['enderman', 'zombie_pigman'].includes(selectedMob)) {
+            const holding = document.getElementById('inp-holding').value;
+            if (holding) tags.push(`holding:"${holding}"`);
+        }
+        
+        if (['zombie', 'spawnskin'].includes(selectedMob)) {
+            if (document.getElementById('inp-armor-enable').checked) {
+                const h = document.getElementById('inp-helmet').value || "{}";
+                const c = document.getElementById('inp-chestplate').value || "{}";
+                const l = document.getElementById('inp-leggings').value || "{}";
+                const b = document.getElementById('inp-boots').value || "{}";
+                const fmt = (val) => val === "{}" ? "{}" : `"${val}"`;
+                tags.push(`armor:[${fmt(h)}, ${fmt(c)}, ${fmt(l)}, ${fmt(b)}]`);
+            }
+        }
+        
+        if (selectedMob === 'spawnskin') {
+            const aggro = document.getElementById('inp-aggro').value;
+            if (aggro) tags.push(`aggro:"${aggro}"`);
+            const skin = document.getElementById('inp-skin').value;
+            if (skin) tags.push(`skin:${skin}`);
+        }
+        
+        if (selectedMob === 'creeper') {
+            const charged = document.getElementById('inp-charged').checked;
+            if (charged) tags.push(`charged:true`);
+        }
+        
+        if (['chicken', 'sheep', 'rabbit', 'pig', 'wolf', 'cow', 'mooshroom', 'cowctus'].includes(selectedMob)) {
+            const baby = document.getElementById('inp-baby').checked;
+            if (baby) tags.push(`baby:true`);
+        }
+        
+        if (['sheep', 'dog'].includes(selectedMob)) {
+            const color = document.getElementById('inp-color').value;
+            if (color) tags.push(`color:"${color}"`);
+        }
+        
+        if (selectedMob === 'sheep') {
+            const sheared = document.getElementById('inp-sheared').checked;
+            if (sheared) tags.push(`sheared:true`);
+        }
+        
+        // Procesar listado dinámico de drops
+        const dropRows = document.querySelectorAll('.drop-row');
+        if (dropRows.length > 0) {
+            let dropsArray = [];
+            dropRows.forEach(row => {
+                const itemId = row.querySelector('.drop-id').value;
+                const qty = row.querySelector('.drop-qty').value || 1;
+                if (itemId) {
+                    dropsArray.push(`{item:{id:"${itemId}"}, quantity:${qty}}`);
+                }
+            });
+            if (dropsArray.length > 0) {
+                tags.push(`drops:[${dropsArray.join(', ')}]`);
+            }
+        }
+        
+        let tagsString = tags.length > 0 ? ` {${tags.join(', ')}}` : '';
+        let cmd = `/summon ${selectedMob} 1 ~ ~${tagsString}`;
+        document.getElementById('output-command').textContent = cmd;
+    }
+
+    // Iniciar con la primera pestaña activa
+    window.onload = init;
+</script>
+
+</body>
+</html>
