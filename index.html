@@ -3,261 +3,479 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mine Blocks Command Generator</title>
+<title>Mine Blocks /summon Generator</title>
 <style>
     @font-face {
-        font-family: 'Minecraftia';
-        src: url('https://cdn.rawgit.com/South-Paw/typeface-minecraft/master/Minecraftia-Regular.woff2') format('woff2');
+        font-family: 'Rainy Hearts';
+        src: url('rainyhearts.ttf') format('truetype');
     }
+    
     body {
-        background-color: #2b2b2b;
-        color: white;
-        font-family: 'Minecraftia', sans-serif;
+        background-color: #1e1e1e;
+        color: #ffffff;
+        font-family: 'Rainy Hearts', monospace, sans-serif;
+        font-size: 18px;
         margin: 0;
-        padding: 20px;
+        padding: 0px;
+        line-height: 1.4;
     }
-    /* Estilos base de la interfaz de Minecraft */
+
     .mc-ui {
-        background-color: #c6c6c6;
+        background-color: #2b2b2b;
         border: 4px solid;
-        border-color: #ffffff #555555 #555555 #ffffff;
-        color: #373737;
+        border-color: #5a5a5a #111111 #111111 #5a5a5a;
+        color: #ffffff;
         padding: 16px;
     }
-    .mc-btn {
-        background-color: #8b8b8b;
+    
+    .mc-ui-inset {
+        background-color: #1e1e1e;
         border: 4px solid;
-        border-color: #ffffff #555555 #555555 #ffffff;
-        color: white;
-        text-shadow: 2px 2px 0 #373737;
+        border-color: #111111 #5a5a5a #5a5a5a #111111;
+    }
+
+    .mc-btn {
+        background-color: #404040;
+        border: 4px solid;
+        border-color: #7a7a7a #111111 #111111 #7a7a7a;
+        color: #ffffff;
         padding: 8px 16px;
-        font-family: 'Minecraftia', sans-serif;
+        font-family: 'Rainy Hearts', sans-serif;
+        font-size: 18px;
         cursor: pointer;
         text-transform: uppercase;
+        text-shadow: 2px 2px 0 #111111;
+        transition: transform 0.05s, border-color 0.05s;
     }
     .mc-btn:active {
-        border-color: #555555 #ffffff #ffffff #555555;
+        border-color: #111111 #7a7a7a #7a7a7a #111111;
+        transform: translate(2px, 2px);
     }
-    input, select {
-        background-color: #000000;
+
+    input[type="text"], input[type="number"], select {
+        background-color: #111111;
         color: #ffffff;
         border: 2px solid;
-        border-color: #555555 #ffffff #ffffff #555555;
-        padding: 6px;
-        font-family: 'Minecraftia', sans-serif;
+        border-color: #000000 #5a5a5a #5a5a5a #000000;
+        padding: 8px;
+        font-family: 'Rainy Hearts', sans-serif;
+        font-size: 16px;
         margin-top: 4px;
-        margin-bottom: 10px;
         width: 100%;
         box-sizing: border-box;
     }
+    
     input[type="checkbox"] {
-        width: auto;
+        width: 20px;
+        height: 20px;
+        vertical-align: middle;
+        margin-right: 8px;
+        accent-color: #5a5a5a;
+        cursor: pointer;
     }
+
     .main-container {
         display: flex;
+        flex-direction: column;
         gap: 20px;
-        max-width: 1000px;
+        max-width: 1100px;
         margin: auto;
     }
-    /* Dos Columnas */
+    @media (min-width: 768px) {
+        .main-container {
+            flex-direction: row;
+        }
+    }
+
     .left-col {
         flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 15px;
+        height: fit-content;
     }
     .right-col {
         flex: 2;
-        max-height: 85vh;
+        max-height: 90vh;
         overflow-y: auto;
     }
+
+    /* Flexbox layout for input rows */
+    .input-row {
+        display: flex;
+        gap: 20px;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    .input-group {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .checkboxes-row {
+        align-items: center;
+        margin-top: -5px;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 0px solid #111;
+        flex-wrap: wrap; /* Permite que las opciones pasen a la siguiente línea si no caben */
+    }
+
     .preview-box {
         width: 160px;
         height: 160px;
-        background-color: #8b8b8b;
-        border: 4px solid;
-        border-color: #373737 #ffffff #ffffff #373737;
         display: flex;
         justify-content: center;
         align-items: center;
+        background-color: #1e1e1e;
+        background-image: linear-gradient(45deg, #181818 25%, transparent 25%, transparent 75%, #181818 75%, #181818), linear-gradient(45deg, #181818 25%, transparent 25%, transparent 75%, #181818 75%, #181818);
+        background-size: 20px 20px;
+        background-position: 0 0, 10px 10px;
     }
     .preview-box img {
-        max-width: 100%;
-        max-height: 100%;
-        image-rendering: pixelated; /* Para que no se vea borroso el pixel art */
+        width: 100%;  /* Modificado para que abarque toda la caja */
+        height: 100%; /* Modificado para que abarque toda la caja */
+        object-fit: contain; /* Evita que la imagen se deforme o se corte */
+        image-rendering: pixelated;
     }
-    
-    /* Estilos del Modal de Inventario */
+
     .modal-overlay {
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.7);
+        background: rgba(0,0,0,0.85);
         display: none;
         justify-content: center;
         align-items: center;
-        z-index: 100;
+        z-index: 1000;
     }
     .modal-content {
-        width: 600px;
-        max-width: 90%;
+        width: 850px;
+        max-width: 95%;
+        height: 700px;
+        display: flex;
+        flex-direction: column;
     }
+    
     .tabs {
         display: flex;
         gap: 2px;
         margin-bottom: -4px;
+        flex-wrap: wrap;
     }
     .tab {
-        background-color: #8b8b8b;
+        background-color: #1e1e1e;
         border: 4px solid;
-        border-color: #ffffff #555555 #000000 #ffffff;
+        border-color: #5a5a5a #111111 #111111 #5a5a5a;
         border-bottom: none;
-        padding: 8px 12px;
+        padding: 8px 16px;
         cursor: pointer;
-        font-family: 'Minecraftia', sans-serif;
         z-index: 1;
-        color: white;
-        text-shadow: 2px 2px 0 #373737;
+        color: #aaaaaa;
+        font-size: 18px;
     }
     .tab.active {
-        background-color: #c6c6c6;
-        border-bottom: 4px solid #c6c6c6;
-        color: #373737;
+        background-color: #2b2b2b;
+        border-bottom: 4px solid #2b2b2b;
+        color: #ffffff;
         text-shadow: none;
     }
+    
     .inventory-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
-        gap: 8px;
-        padding: 16px;
-        background-color: #c6c6c6;
-        border: 4px solid;
-        border-color: #ffffff #555555 #555555 #ffffff;
-    }
-    .inv-slot {
-        width: 64px;
-        height: 64px;
-        background-color: #8b8b8b;
-        border: 4px solid;
-        border-color: #373737 #ffffff #ffffff #373737;
-        cursor: pointer;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    .inv-slot:hover {
-        background-color: #a0a0a0;
-    }
-    .inv-slot img {
-        width: 48px;
-        height: 48px;
-        image-rendering: pixelated;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0;
+        padding: 20px;
+        flex-grow: 1;
+        align-content: start;
+        overflow-y: auto;
     }
     
-    /* Layout dinámico de inputs */
+    .inv-card {
+        background-color: #333333;
+        border: 2px solid;
+        border-color: #5a5a5a #111111 #111111 #5a5a5a;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 6px;
+        cursor: pointer;
+        transition: transform 0.1s, border-color 0.1s, background-color 0.1s;
+    }
+    .inv-card:hover {
+        background-color: #444444;
+        border-color: #aaaaaa #111111 #111111 #aaaaaa;
+        transform: translateY(-3px);
+    }
+    .inv-card img {
+        width: 77px;
+        height: 124px;
+        object-fit: contain;
+        image-rendering: pixelated;
+        margin-bottom: 10px;
+    }
+    .inv-card-name {
+        font-size: 14px;
+        color: #ffffff;
+        text-align: center;
+        word-break: break-word;
+        text-transform: capitalize;
+        line-height: 1.2;
+    }
+
     .command-output {
-        margin-top: 20px;
-        background: #000;
+        margin-top: 25px;
+        background: #000000;
         color: #55ff55;
         padding: 15px;
-        border: 4px solid #555;
+        border: 0px solid #111111;
         font-family: monospace;
         word-wrap: break-word;
         font-size: 16px;
     }
+    
     .drop-row {
         display: flex;
         gap: 10px;
         align-items: center;
         margin-bottom: 10px;
+        background-color: #1e1e1e;
+        padding: 10px;
+        border: 0px solid #111111;
     }
     .drop-row select { margin: 0; flex: 2; }
     .drop-row input { margin: 0; flex: 1; }
-    .drop-row button { margin: 0; padding: 6px; }
+    .drop-row button { margin: 0; padding: 6px 12px; }
     
-    .conditional-group { display: none; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px dashed #8b8b8b;}
-    label { display: block; margin-top: 10px; font-weight: bold;}
-    .inline-label { display: inline; margin-top: 0; font-weight: normal;}
+    .conditional-group { 
+        display: none; 
+        margin-bottom: 15px; 
+        padding: 15px; 
+        background-color: #1e1e1e;
+        border: 0px solid #111111;
+    }
+    
+    label { display: block; margin-top: 5px; font-weight: bold;}
+    .inline-label { display: inline-flex; align-items: center; margin-top: 0; font-weight: normal; cursor: pointer;}
+    h2 { margin-top: 0; text-transform: uppercase; font-size: 24px; border-bottom: 0px solid #111111; padding-bottom: 10px; color: #fff;}
+    h3 { margin-top: 0; font-size: 20px; color: #ddd;}
+
+    .armor-container {
+        display: flex;
+        flex-direction: row;
+        gap: 4px;
+        margin-top: 15px;
+        width: fit-content;
+    }
+    .custom-dropdown {
+        position: relative;
+        width: 64px;
+        height: 64px;
+        user-select: none;
+    }
+    .dropdown-trigger {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        position: relative;
+        background-color: #333333;
+        border: 2px solid;
+        border-color: #5a5a5a #111111 #111111 #5a5a5a;
+    }
+    .dropdown-trigger:hover {
+        background-color: #444444;
+    }
+    .dropdown-trigger img {
+        width: 48px;
+        height: 48px;
+        image-rendering: pixelated;
+    }
+    .dropdown-placeholder {
+        font-size: 12px;
+        color: #aaaaaa;
+        text-align: center;
+        line-height: 1.1;
+    }
+    
+    .dropdown-options {
+        display: none;
+        position: absolute;
+        top: 68px;
+        left: 0;
+        background: #2b2b2b;
+        border: 4px solid;
+        border-color: #5a5a5a #111111 #111111 #5a5a5a;
+        z-index: 50;
+        flex-direction: column;
+        width: max-content;
+        padding: 4px;
+        gap: 4px;
+    }
+    .custom-dropdown.open .dropdown-options {
+        display: flex;
+    }
+    .dropdown-option {
+        width: 56px;
+        height: 56px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        background-color: #333333;
+    }
+    .dropdown-option:hover {
+        background-color: #5a5a5a;
+    }
+    .dropdown-option img {
+        width: 48px;
+        height: 48px;
+        image-rendering: pixelated;
+    }
 </style>
 </head>
 <body>
 
 <div class="main-container">
-    <!-- COLUMNA IZQUIERDA: Preview del Mob -->
+    
+    <!-- Left Column: Mob Target -->
     <div class="left-col mc-ui">
         <h2>Mob Target</h2>
-        <div class="preview-box">
-            <!-- La imagen buscará localmente en la carpeta mobs/ -->
-            <img id="mob-preview-img" src="mobs/pig.png" alt="Preview">
+        <div class="preview-box mc-ui-inset">
+            <img id="mob-preview-img" src="mobs/pig.png" alt="Preview" onerror="this.style.display='none'">
         </div>
-        <h3 id="mob-name-display" style="text-transform: uppercase;">pig</h3>
-        <button class="mc-btn" onclick="openInventory()">Cambiar Mob</button>
+        <h2 id="mob-name-display" style="border:none; padding:0; margin:5px 0;">PIG</h2>
+        <button class="mc-btn" onclick="openInventory()">Seleccionar Mob</button>
     </div>
 
-    <!-- COLUMNA DERECHA: Opciones -->
+    <!-- Right Column: Options -->
     <div class="right-col mc-ui">
         <h2>Atributos & Tags</h2>
         
-        <label>Custom Name:</label>
-        <input type="text" id="inp-name" placeholder="Crystal" oninput="generateCommand()">
+        <!-- Fila con flexbox para Name y Health -->
+        <div class="input-row">
+            <div class="input-group">
+                <label>Custom Name:</label>
+                <!-- Se ha pre-llenado con "Crystal" basado en el contexto -->
+                <input type="text" id="inp-name" value="Crystal" placeholder="Crystal" oninput="generateCommand()">
+            </div>
+            <div class="input-group">
+                <label>Health:</label>
+                <input type="number" id="inp-health" placeholder="20" oninput="generateCommand()">
+            </div>
+        </div>
         
-        <label>Health:</label>
-        <input type="number" id="inp-health" placeholder="20" oninput="generateCommand()">
+        <!-- Fila dinámica con checkboxes agrupadas -->
+        <div class="input-row checkboxes-row">
+            <label class="inline-label">
+                <input type="checkbox" id="inp-defaultDrops" checked onchange="generateCommand()"> 
+                Default Drops
+            </label>
+            <label class="inline-label">
+                <input type="checkbox" id="inp-onFire" onchange="generateCommand()"> 
+                On Fire
+            </label>
+            <label class="inline-label" id="group-charged" style="display: none;">
+                <input type="checkbox" id="inp-charged" onchange="generateCommand()"> 
+                Charged
+            </label>
+            <label class="inline-label" id="group-baby" style="display: none;">
+                <input type="checkbox" id="inp-baby" onchange="generateCommand()"> 
+                Baby
+            </label>
+            <label class="inline-label" id="group-sheared" style="display: none;">
+                <input type="checkbox" id="inp-sheared" onchange="generateCommand()"> 
+                Sheared
+            </label>
+        </div>
         
-        <label><input type="checkbox" id="inp-defaultDrops" class="inline-label" checked onchange="generateCommand()"> Default Drops</label>
-        <br>
-        <label><input type="checkbox" id="inp-onFire" class="inline-label" onchange="generateCommand()"> On Fire</label>
-        
-        <!-- Opciones Condicionales -->
+        <!-- Conditional Options -->
         <div id="group-holding" class="conditional-group">
-            <label>Holding (Item ID):</label>
+            <h3>Holding Item</h3>
+            <label>Item ID (ej. diamond_sword):</label>
             <input type="text" id="inp-holding" placeholder="diamond_sword" oninput="generateCommand()">
         </div>
         
         <div id="group-armor" class="conditional-group">
-            <label><input type="checkbox" id="inp-armor-enable" class="inline-label" onchange="generateCommand()"> Equipar Armadura</label>
-            <div style="margin-left: 20px; margin-top:10px;">
-                <label>Helmet:</label>
-                <select id="inp-helmet" onchange="generateCommand()">
-                    <option value="">(Ninguno)</option>
-                    <option value="leather_cap">leather_cap</option>
-                    <option value="iron_helmet">iron_helmet</option>
-                    <option value="gold_helmet">gold_helmet</option>
-                    <option value="diamond_helmet">diamond_helmet</option>
-                    <option value="dragon_scale_helmet">dragon_scale_helmet</option>
-                </select>
-                <label>Chestplate:</label>
-                <select id="inp-chestplate" onchange="generateCommand()">
-                    <option value="">(Ninguno)</option>
-                    <option value="leather_tunic">leather_tunic</option>
-                    <option value="iron_chestplate">iron_chestplate</option>
-                    <option value="gold_chestplate">gold_chestplate</option>
-                    <option value="diamond_chestplate">diamond_chestplate</option>
-                    <option value="dragon_scale_chestplate">dragon_scale_chestplate</option>
-                </select>
-                <label>Leggings:</label>
-                <select id="inp-leggings" onchange="generateCommand()">
-                    <option value="">(Ninguno)</option>
-                    <option value="leather_pants">leather_pants</option>
-                    <option value="iron_leggings">iron_leggings</option>
-                    <option value="gold_leggings">gold_leggings</option>
-                    <option value="diamond_leggings">diamond_leggings</option>
-                    <option value="dragon_scale_leggings">dragon_scale_leggings</option>
-                </select>
-                <label>Boots:</label>
-                <select id="inp-boots" onchange="generateCommand()">
-                    <option value="">(Ninguno)</option>
-                    <option value="leather_boots">leather_boots</option>
-                    <option value="iron_boots">iron_boots</option>
-                    <option value="gold_boots">gold_boots</option>
-                    <option value="diamond_boots">diamond_boots</option>
-                    <option value="dragon_scale_boots">dragon_scale_boots</option>
-                </select>
+            <label class="inline-label" style="font-weight:bold; font-size:16px;">
+                <input type="checkbox" id="inp-armor-enable" onchange="toggleArmorInterface(); generateCommand()"> 
+                Equipar Armadura
+            </label>
+            
+            <!-- Horizontal list of custom dropdowns for armor -->
+            <div id="armor-selectors" class="armor-container" style="display:none;">
+                <!-- Helmet Slot -->
+                <div class="custom-dropdown" data-slot="helmet" id="dd-helmet">
+                    <div class="dropdown-trigger" onclick="toggleDropdown(this)">
+                        <span class="dropdown-placeholder">Casco</span>
+                        <img src="" style="display:none;" alt="">
+                    </div>
+                    <div class="dropdown-options">
+                        <div class="dropdown-option mc-ui-inset" data-value="" onclick="selectArmorOption(this)"><img src="armors/empty.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="leather_cap" onclick="selectArmorOption(this)"><img src="armors/leather_cap.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="iron_helmet" onclick="selectArmorOption(this)"><img src="armors/iron_helmet.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="gold_helmet" onclick="selectArmorOption(this)"><img src="armors/gold_helmet.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="diamond_helmet" onclick="selectArmorOption(this)"><img src="armors/diamond_helmet.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="dragon_scale_helmet" onclick="selectArmorOption(this)"><img src="armors/dragon_scale_helmet.png" onerror="this.style.display='none'"></div>
+                    </div>
+                </div>
+
+                <!-- Chestplate Slot -->
+                <div class="custom-dropdown" data-slot="chestplate" id="dd-chestplate">
+                    <div class="dropdown-trigger" onclick="toggleDropdown(this)">
+                        <span class="dropdown-placeholder">Pechera</span>
+                        <img src="" style="display:none;" alt="">
+                    </div>
+                    <div class="dropdown-options">
+                        <div class="dropdown-option mc-ui-inset" data-value="" onclick="selectArmorOption(this)"><img src="armors/empty.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="leather_tunic" onclick="selectArmorOption(this)"><img src="armors/leather_tunic.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="iron_chestplate" onclick="selectArmorOption(this)"><img src="armors/iron_chestplate.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="gold_chestplate" onclick="selectArmorOption(this)"><img src="armors/gold_chestplate.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="diamond_chestplate" onclick="selectArmorOption(this)"><img src="armors/diamond_chestplate.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="dragon_scale_chestplate" onclick="selectArmorOption(this)"><img src="armors/dragon_scale_chestplate.png" onerror="this.style.display='none'"></div>
+                    </div>
+                </div>
+
+                <!-- Leggings Slot -->
+                <div class="custom-dropdown" data-slot="leggings" id="dd-leggings">
+                    <div class="dropdown-trigger" onclick="toggleDropdown(this)">
+                        <span class="dropdown-placeholder">Pantalón</span>
+                        <img src="" style="display:none;" alt="">
+                    </div>
+                    <div class="dropdown-options">
+                        <div class="dropdown-option mc-ui-inset" data-value="" onclick="selectArmorOption(this)"><img src="armors/empty.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="leather_pants" onclick="selectArmorOption(this)"><img src="armors/leather_pants.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="iron_leggings" onclick="selectArmorOption(this)"><img src="armors/iron_leggings.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="gold_leggings" onclick="selectArmorOption(this)"><img src="armors/gold_leggings.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="diamond_leggings" onclick="selectArmorOption(this)"><img src="armors/diamond_leggings.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="dragon_scale_leggings" onclick="selectArmorOption(this)"><img src="armors/dragon_scale_leggings.png" onerror="this.style.display='none'"></div>
+                    </div>
+                </div>
+
+                <!-- Boots Slot -->
+                <div class="custom-dropdown" data-slot="boots" id="dd-boots">
+                    <div class="dropdown-trigger" onclick="toggleDropdown(this)">
+                        <span class="dropdown-placeholder">Botas</span>
+                        <img src="" style="display:none;" alt="">
+                    </div>
+                    <div class="dropdown-options">
+                        <div class="dropdown-option mc-ui-inset" data-value="" onclick="selectArmorOption(this)"><img src="armors/empty.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="leather_boots" onclick="selectArmorOption(this)"><img src="armors/leather_boots.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="iron_boots" onclick="selectArmorOption(this)"><img src="armors/iron_boots.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="gold_boots" onclick="selectArmorOption(this)"><img src="armors/gold_boots.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="diamond_boots" onclick="selectArmorOption(this)"><img src="armors/diamond_boots.png" onerror="this.style.display='none'"></div>
+                        <div class="dropdown-option mc-ui-inset" data-value="dragon_scale_boots" onclick="selectArmorOption(this)"><img src="armors/dragon_scale_boots.png" onerror="this.style.display='none'"></div>
+                    </div>
+                </div>
+
             </div>
         </div>
 
         <div id="group-aggro" class="conditional-group">
-            <label>Aggro (Comportamiento):</label>
+            <label>Aggro:</label>
             <select id="inp-aggro" onchange="generateCommand()">
                 <option value="neutral">neutral</option>
                 <option value="hostile">hostile</option>
@@ -268,14 +486,6 @@
         <div id="group-skin" class="conditional-group">
             <label>Skin ID:</label>
             <input type="number" id="inp-skin" placeholder="1" oninput="generateCommand()">
-        </div>
-
-        <div id="group-charged" class="conditional-group">
-            <label><input type="checkbox" id="inp-charged" class="inline-label" onchange="generateCommand()"> Charged</label>
-        </div>
-
-        <div id="group-baby" class="conditional-group">
-            <label><input type="checkbox" id="inp-baby" class="inline-label" onchange="generateCommand()"> Baby</label>
         </div>
 
         <div id="group-color" class="conditional-group">
@@ -293,62 +503,70 @@
             </select>
         </div>
 
-        <div id="group-sheared" class="conditional-group">
-            <label><input type="checkbox" id="inp-sheared" class="inline-label" onchange="generateCommand()"> Sheared</label>
-        </div>
-
-        <!-- Drops Personalizados -->
-        <div style="margin-top: 20px;">
-            <h3>Loot Drops Personalizados</h3>
+        <div style="margin-top: 30px; border-top: 0px solid #111; padding-top: 15px;">
+            <h2>Loot Drops</h2>
             <div id="drops-container"></div>
             <button class="mc-btn" onclick="addDrop()">+ Añadir Drop</button>
         </div>
 
+        <!-- Output Display -->
         <div class="command-output" id="output-command">
             /summon pig 1 ~ ~
         </div>
     </div>
 </div>
 
-<!-- Modal de Inventario (Minecraft UI) -->
 <div id="inv-modal" class="modal-overlay">
-    <div class="modal-content">
+    <div class="modal-content mc-ui">
+        <h2>Seleccionar Mob</h2>
         <div class="tabs">
             <div class="tab active" onclick="switchTab('Animals', this)">Animals</div>
             <div class="tab" onclick="switchTab('Overworld', this)">Overworld</div>
             <div class="tab" onclick="switchTab('Nether', this)">Nether</div>
             <div class="tab" onclick="switchTab('End', this)">End</div>
         </div>
-        <div class="inventory-grid" id="inv-grid">
-            <!-- Slots generados automáticamente -->
+        <div class="inventory-grid mc-ui-inset" id="inv-grid">
+            <!-- Cards inyectadas por JS -->
         </div>
-        <div style="text-align: right; margin-top: 10px;">
-            <button class="mc-btn" onclick="closeInventory()">Cerrar</button>
+        <div style="text-align: right; margin-top: 15px;">
+            <button class="mc-btn" onclick="closeInventory()">Cancelar</button>
         </div>
     </div>
 </div>
 
 <script>
-    // Listados de Mobs por categoría
     const mobsData = {
-        Animals: ['pig', 'cow', 'sheep', 'chicken', 'squid', 'rabbit', 'bat', 'dog', 'mooshroom', 'cowctus'],
-        Overworld: ['zombie', 'creeper', 'skeleton', 'spider', 'slime', 'wolf', 'snow_golem', 'spawnskin'],
+        Animals: ['pig', 'cow', 'sheep', 'chicken', 'squid', 'rabbit', 'bat', 'dog', 'wolf', 'mooshroom', 'cowctus'],
+        Overworld: ['zombie', 'creeper', 'skeleton', 'spider', 'slime', 'snow_golem', 'spawnskin'],
         Nether: ['zombie_pigman', 'ghast', 'blaze', 'magma_cube', 'nethereye'],
         End: ['enderman', 'ender_dragon']
     };
 
-    // Identificadores de items de la wiki para los Drops
     const identifiers = ["acid", "rail_activator", "afro", "air", "anvil", "apple", "apple_juice", "arrow", "potato_baked", "balloon", "bamboo", "bamboo_block", "bed", "bedrock", "beetroot", "blaze_powder", "blaze_rod", "bone", "bone_block", "book", "bookshelf", "bottle_of_enchanting", "bow", "bowl", "bread", "brewing_stand", "brick", "brown_mushroom", "bucket_lava", "bucket_milk", "bucket_water", "button", "cactus", "cake", "carpet", "carrot", "chest", "clay", "clock", "coal", "coal_block", "coal_ore", "cobblestone", "cobweb", "cocoa_bean", "command_book", "compass", "bacon_cooked", "chicken_cooked", "porkchop_cooked", "cookie", "diamond", "diamond_axe", "diamond_boots", "diamond_chestplate", "diamond_helmet", "diamond_hoe", "diamond_leggings", "diamond_pickaxe", "diamond_shovel", "diamond_sword", "dirt", "dispenser", "dropper", "dye", "egg", "enchantment_table", "ender_pearl", "eye_of_ender", "feather", "fishing_rod", "flint", "flint_and_steel", "furnace", "glass", "glowstone_dust", "gold_block", "gold_ingot", "golden_apple", "iron_ingot", "iron_pickaxe", "iron_sword", "leather", "porkchop", "string", "stick", "stone", "wood", "wooden_pickaxe", "wool"];
 
     let selectedMob = 'pig';
+    let armorState = {
+        helmet: "",
+        chestplate: "",
+        leggings: "",
+        boots: ""
+    };
 
     function init() {
         switchTab('Animals', document.querySelector('.tab'));
         updateVisibility();
         generateCommand();
+        
+        document.addEventListener('click', function(event) {
+            const dropdowns = document.querySelectorAll('.custom-dropdown');
+            dropdowns.forEach(dd => {
+                if (!dd.contains(event.target)) {
+                    dd.classList.remove('open');
+                }
+            });
+        });
     }
 
-    /* Lógica del Inventario de Mobs */
     function openInventory() {
         document.getElementById('inv-modal').style.display = 'flex';
     }
@@ -365,45 +583,60 @@
         grid.innerHTML = '';
         
         mobsData[category].forEach(mob => {
-            const slot = document.createElement('div');
-            slot.className = 'inv-slot';
-            slot.title = mob;
-            slot.onclick = () => selectMob(mob);
+            const card = document.createElement('div');
+            card.className = 'inv-card';
+            card.onclick = () => selectMob(mob);
             
             const img = document.createElement('img');
             img.src = `mobs/${mob}.png`;
             img.alt = mob;
-            // Fallback en caso de que aún no tengas un PNG en la carpeta local
-            img.onerror = () => { img.style.display = 'none'; slot.textContent = mob.substring(0,3); };
+            img.onerror = function() { this.style.display = 'none'; };
             
-            slot.appendChild(img);
-            grid.appendChild(slot);
+            const nameLabel = document.createElement('span');
+            nameLabel.className = 'inv-card-name';
+            nameLabel.textContent = mob.replace('_', ' ');
+
+            card.appendChild(img);
+            card.appendChild(nameLabel);
+            grid.appendChild(card);
         });
     }
 
     function selectMob(mob) {
         selectedMob = mob;
-        document.getElementById('mob-preview-img').src = `mobs/${mob}.png`;
-        document.getElementById('mob-name-display').textContent = mob;
+        const imgEl = document.getElementById('mob-preview-img');
+        imgEl.src = `mobs/${mob}.png`;
+        imgEl.style.display = 'block'; 
+        
+        document.getElementById('mob-name-display').textContent = mob.replace('_', ' ').toUpperCase();
         closeInventory();
         updateVisibility();
         generateCommand();
     }
 
-    /* Mostrar / Ocultar parámetros en función del Mob elegido */
     function updateVisibility() {
         const mob = selectedMob;
-        document.getElementById('group-holding').style.display = ['enderman', 'zombie_pigman'].includes(mob) ? 'block' : 'none';
-        document.getElementById('group-armor').style.display = ['zombie', 'spawnskin'].includes(mob) ? 'block' : 'none';
-        document.getElementById('group-aggro').style.display = (mob === 'spawnskin') ? 'block' : 'none';
-        document.getElementById('group-skin').style.display = (mob === 'spawnskin') ? 'block' : 'none';
-        document.getElementById('group-charged').style.display = (mob === 'creeper') ? 'block' : 'none';
-        document.getElementById('group-baby').style.display = ['chicken', 'sheep', 'rabbit', 'pig', 'wolf', 'cow', 'mooshroom', 'cowctus'].includes(mob) ? 'block' : 'none';
-        document.getElementById('group-color').style.display = ['sheep', 'dog'].includes(mob) ? 'block' : 'none';
-        document.getElementById('group-sheared').style.display = (mob === 'sheep') ? 'block' : 'none';
+        
+        // Función show actualizada para respetar el layout de inline-flex de las checkboxes movidas
+        const show = (id, condition, displayType = 'block') => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = condition ? displayType : 'none';
+            }
+        };
+
+        show('group-holding', ['enderman', 'zombie_pigman'].includes(mob));
+        show('group-armor', ['zombie', 'spawnskin'].includes(mob));
+        show('group-aggro', mob === 'spawnskin');
+        show('group-skin', mob === 'spawnskin');
+        show('group-color', ['sheep', 'dog'].includes(mob));
+        
+        // Las opciones ahora son inline-flex en lugar de block
+        show('group-charged', mob === 'creeper', 'inline-flex');
+        show('group-baby', ['chicken', 'sheep', 'rabbit', 'pig', 'wolf', 'cow', 'mooshroom', 'cowctus'].includes(mob), 'inline-flex');
+        show('group-sheared', mob === 'sheep', 'inline-flex');
     }
 
-    /* Lógica de los Drops */
     function addDrop() {
         const container = document.getElementById('drops-container');
         const row = document.createElement('div');
@@ -415,7 +648,7 @@
         
         const defaultOpt = document.createElement('option');
         defaultOpt.value = "";
-        defaultOpt.textContent = "Selecciona un item...";
+        defaultOpt.textContent = "Selecciona Item ID...";
         select.appendChild(defaultOpt);
         
         identifiers.forEach(id => {
@@ -428,17 +661,20 @@
         const qtyLabel = document.createElement('label');
         qtyLabel.textContent = 'Quantity:';
         qtyLabel.className = 'inline-label';
+        qtyLabel.style.margin = '0 10px';
         
         const qty = document.createElement('input');
         qty.type = 'number';
         qty.className = 'drop-qty';
         qty.value = 1;
         qty.min = 1;
+        qty.style.width = '80px';
         qty.oninput = generateCommand;
         
         const removeBtn = document.createElement('button');
         removeBtn.textContent = 'X';
         removeBtn.className = 'mc-btn';
+        removeBtn.style.padding = "6px 12px";
         removeBtn.onclick = () => { row.remove(); generateCommand(); };
         
         row.appendChild(select);
@@ -449,11 +685,50 @@
         generateCommand();
     }
 
-    /* Generación en Tiempo Real del Comando */
+    function toggleArmorInterface() {
+        const isEnabled = document.getElementById('inp-armor-enable').checked;
+        document.getElementById('armor-selectors').style.display = isEnabled ? 'flex' : 'none';
+    }
+
+    function toggleDropdown(triggerElement) {
+        document.querySelectorAll('.custom-dropdown').forEach(dd => {
+            if (dd !== triggerElement.parentElement) {
+                dd.classList.remove('open');
+            }
+        });
+        triggerElement.parentElement.classList.toggle('open');
+    }
+
+    function selectArmorOption(optionElement) {
+        const value = optionElement.getAttribute('data-value');
+        const dropdown = optionElement.closest('.custom-dropdown');
+        const slotType = dropdown.getAttribute('data-slot');
+        const trigger = dropdown.querySelector('.dropdown-trigger');
+        const triggerImg = trigger.querySelector('img');
+        const triggerText = trigger.querySelector('.dropdown-placeholder');
+
+        armorState[slotType] = value;
+
+        if (value === "") {
+            triggerImg.style.display = 'none';
+            triggerText.style.display = 'block';
+        } else {
+            const optionImg = optionElement.querySelector('img');
+            if (optionImg) {
+                triggerImg.src = optionImg.src;
+                triggerImg.style.display = 'block';
+                triggerText.style.display = 'none';
+            }
+        }
+
+        dropdown.classList.remove('open');
+        generateCommand();
+    }
+
     function generateCommand() {
         let tags = [];
         
-        const name = document.getElementById('inp-name').value;
+        const name = document.getElementById('inp-name').value.trim();
         if (name) tags.push(`name:"${name}"`);
         
         const health = document.getElementById('inp-health').value;
@@ -466,18 +741,18 @@
         if (onFire) tags.push(`onFire:true`);
         
         if (['enderman', 'zombie_pigman'].includes(selectedMob)) {
-            const holding = document.getElementById('inp-holding').value;
+            const holding = document.getElementById('inp-holding').value.trim();
             if (holding) tags.push(`holding:"${holding}"`);
         }
         
         if (['zombie', 'spawnskin'].includes(selectedMob)) {
             if (document.getElementById('inp-armor-enable').checked) {
-                const h = document.getElementById('inp-helmet').value || "{}";
-                const c = document.getElementById('inp-chestplate').value || "{}";
-                const l = document.getElementById('inp-leggings').value || "{}";
-                const b = document.getElementById('inp-boots').value || "{}";
-                const fmt = (val) => val === "{}" ? "{}" : `"${val}"`;
-                tags.push(`armor:[${fmt(h)}, ${fmt(c)}, ${fmt(l)}, ${fmt(b)}]`);
+                const formatArmor = (val) => val === "" ? "{}" : `"${val}"`;
+                const h = formatArmor(armorState.helmet);
+                const c = formatArmor(armorState.chestplate);
+                const l = formatArmor(armorState.leggings);
+                const b = formatArmor(armorState.boots);
+                tags.push(`armor:[${h}, ${c}, ${l}, ${b}]`);
             }
         }
         
@@ -508,7 +783,6 @@
             if (sheared) tags.push(`sheared:true`);
         }
         
-        // Procesar listado dinámico de drops
         const dropRows = document.querySelectorAll('.drop-row');
         if (dropRows.length > 0) {
             let dropsArray = [];
@@ -526,10 +800,10 @@
         
         let tagsString = tags.length > 0 ? ` {${tags.join(', ')}}` : '';
         let cmd = `/summon ${selectedMob} 1 ~ ~${tagsString}`;
+        
         document.getElementById('output-command').textContent = cmd;
     }
 
-    // Iniciar con la primera pestaña activa
     window.onload = init;
 </script>
 
