@@ -44,10 +44,38 @@
         cursor: pointer;
         text-transform: uppercase;
         text-shadow: 2px 2px 0 #111111;
-        transition: transform 0.05s, border-color 0.05s;
+        /* Se añade background-color a la transición para un cambio suave */
+        transition: transform 0.05s, border-color 0.05s, background-color 0.1s; 
     }
+
+    /* NUEVO: Efecto hover para botones generales */
+    .mc-btn:hover {
+        background-color: #555555;
+    }
+
     .mc-btn:active {
         border-color: #111111 #7a7a7a #7a7a7a #111111;
+        transform: translate(2px, 2px);
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        padding: 6px 12px;
+        background-color: #aa0000; 
+        border-color: #ff5555 #550000 #550000 #ff5555;
+        /* Se añade transición también a la X */
+        transition: background-color 0.1s, transform 0.05s, border-color 0.05s;
+    }
+
+    /* NUEVO: Efecto hover rojo brillante para el botón X */
+    .close-btn:hover {
+        background-color: #d11212;
+    }
+
+    .close-btn:active {
+        border-color: #550000 #ff5555 #ff5555 #550000;
         transform: translate(2px, 2px);
     }
 
@@ -112,10 +140,6 @@
     }
     .checkboxes-row {
         align-items: center;
-        margin-top: -5px;
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #111;
         flex-wrap: wrap;
     }
 
@@ -157,39 +181,41 @@
     
     #preview-layer-helmet { 
         z-index: 5; 
-        width: 110px;       /* Tamaño de la imagen del casco */
-        height: 110px;
-        bottom: 220px;      /* Altura a la que flota (desde el suelo del cuadro) */
+        width: 128px;       /* Tamaño de la imagen del casco */
+        height: 122px;
+        bottom: 243px;      /* Altura a la que flota (desde el suelo del cuadro) */
         /* margin-left: 5px;   Descomenta y cambia esto si necesitas moverlo a la izquierda/derecha */
     }
 
     #preview-layer-chestplate { 
         z-index: 4; 
-        width: 130px; 
-        height: 130px;
-        bottom: 120px; 
+        width: 128px; 
+        height: 121px;
+        bottom: 106px;
     }
 
     #preview-layer-leggings { 
-        z-index: 3; 
-        width: 120px; 
-        height: 120px;
-        bottom: 60px; 
+        z-index: 1; 
+        width: 100px;
+        height: 90px;
+        bottom: 42px;
+        left: 158px;
     }
 
     #preview-layer-boots { 
         z-index: 2; 
-        width: 130px; 
-        height: 90px;
-        bottom: 20px;       /* 20px es justo al ras del padding de la caja */
+        width: 128px;
+        height: 110px;
+        bottom: -21px;
+        left: 158px;
     }
 
     #preview-layer-fire { 
         z-index: 6; 
         width: 180px; 
-        height: 180px;
+        height: 382px;
         bottom: 20px; 
-        opacity: 0.85;      /* Transparencia opcional para que se vea el mob quemándose */
+        opacity: 0.67;      /* Transparencia opcional para que se vea el mob quemándose */
     }
     
     /* Control del orden de las capas (z-index) */
@@ -244,7 +270,6 @@
         display: grid;
         grid-template-columns: repeat(5, 1fr);
         gap: 0;
-        padding: 20px;
         flex-grow: 1;
         align-content: start;
         overflow-y: auto;
@@ -275,12 +300,12 @@
         margin-bottom: 10px;
     }
     .inv-card-name {
-        font-size: 14px;
+        font-size: 18px;
         color: #ffffff;
         text-align: center;
         word-break: break-word;
         text-transform: capitalize;
-        line-height: 1.2;
+        line-height: 0.5;
     }
 
     .items-grid {
@@ -475,7 +500,7 @@
             <img id="preview-layer-leggings" class="preview-overlay" src="" style="display:none;" alt="">
             <img id="preview-layer-chestplate" class="preview-overlay" src="" style="display:none;" alt="">
             <img id="preview-layer-helmet" class="preview-overlay" src="" style="display:none;" alt="">
-            <img id="preview-layer-fire" class="preview-overlay" src="assets/fire.png" style="display:none;" alt="">
+            <img id="preview-layer-fire" class="preview-overlay" src="mobs/fire.png" style="display:none;" alt="">
         </div>
         <h2 id="mob-name-display" style="border:none; padding:0; margin:5px 0;">PIG</h2>
         <button class="mc-btn" onclick="openInventory()">Seleccionar Mob</button>
@@ -624,7 +649,7 @@
             </select>
         </div>
 
-        <div style="margin-top: 30px; border-top: 4px solid #111; padding-top: 15px;">
+        <div>
             <h2>Loot Drops</h2>
             <div id="drops-container"></div>
             <button class="mc-btn" onclick="addDrop()">+ Añadir Drop</button>
@@ -743,23 +768,35 @@
     let dropRowCounter = 0;
 
    function init() {
-    switchTab('Animals', document.querySelector('.tab'));
-    updateVisibility();
-    
-    switchItemTab('Blocks', document.querySelector('#item-tabs .tab'));
-    
-    generateCommand();
-    
-    document.addEventListener('click', function(event) {
-        const dropdowns = document.querySelectorAll('.custom-dropdown');
-        dropdowns.forEach(dd => {
-            if (!dd.contains(event.target)) {
-                dd.classList.remove('open');
-            }
-        });
-    });
-}
+        switchTab('Animals', document.querySelector('.tab'));
+        updateVisibility();
+        
+        switchItemTab('Blocks', document.querySelector('#item-tabs .tab'));
+        
+        generateCommand();
+        
+        // Detecta clics en toda la pantalla
+        document.addEventListener('click', function(event) {
+            
+            // 1. Cierra los dropdowns de armadura si haces clic fuera
+            const dropdowns = document.querySelectorAll('.custom-dropdown');
+            dropdowns.forEach(dd => {
+                if (!dd.contains(event.target)) {
+                    dd.classList.remove('open');
+                }
+            });
 
+            // 2. Cierra los modales si haces clic exactamente en el fondo oscuro (overlay)
+            if (event.target.id === 'inv-modal') {
+                closeInventory();
+            }
+            if (event.target.id === 'items-modal') {
+                closeItemInventory();
+            }
+            
+        });
+    }
+	
     function openInventory() {
         document.getElementById('inv-modal').style.display = 'flex';
     }
