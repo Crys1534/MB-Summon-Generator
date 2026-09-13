@@ -29,7 +29,7 @@
     
     .mc-ui-inset {
         background-color: #1e1e1e;
-        border: 4px solid;
+        border: 1px solid;
         border-color: #111111 #5a5a5a #5a5a5a #111111;
     }
 
@@ -446,6 +446,7 @@
     }
     .dropdown-option {
         width: 56px;
+		height: 56px;
 
         display: flex;
         justify-content: center;
@@ -978,7 +979,7 @@
         enchDropdown.className = 'custom-dropdown ench-dropdown';
         enchDropdown.style.width = '100%';
         enchDropdown.style.height = 'auto';
-        enchDropdown.style.minHeight = '48px';
+        enchDropdown.style.minHeight = '29px';
 
         const enchTrigger = document.createElement('div');
         enchTrigger.className = 'dropdown-trigger';
@@ -1044,6 +1045,10 @@
                 opt.className = 'dropdown-option mc-ui-inset ench-option';
                 opt.style.justifyContent = 'flex-start';
                 opt.style.width = 'auto';
+                
+                // ¡AQUÍ ESTÁ LA NUEVA LÍNEA!
+                opt.style.height = 'auto'; 
+                
                 opt.style.padding = '4px 8px';
                 opt.style.gap = '5px';
                 opt.setAttribute('data-value', ench);
@@ -1054,8 +1059,8 @@
 
                 const optImg = document.createElement('img');
                 optImg.src = 'items/enchanted_book.png';
-                optImg.style.width = '20px';
-                optImg.style.height = '20px';
+                optImg.style.width = '16px';
+                optImg.style.height = '16px';
                 optImg.style.imageRendering = 'pixelated';
 
                 const optText = document.createElement('span');
