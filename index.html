@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,11 +44,9 @@
         cursor: pointer;
         text-transform: uppercase;
         text-shadow: 2px 2px 0 #111111;
-        /* Se añade background-color a la transición para un cambio suave */
         transition: transform 0.05s, border-color 0.05s, background-color 0.1s; 
     }
 
-    /* NUEVO: Efecto hover para botones generales */
     .mc-btn:hover {
         background-color: #555555;
     }
@@ -65,11 +63,9 @@
         padding: 6px 12px;
         background-color: #aa0000; 
         border-color: #ff5555 #550000 #550000 #ff5555;
-        /* Se añade transición también a la X */
         transition: background-color 0.1s, transform 0.05s, border-color 0.05s;
     }
 
-    /* NUEVO: Efecto hover rojo brillante para el botón X */
     .close-btn:hover {
         background-color: #d11212;
     }
@@ -84,7 +80,6 @@
         color: #ffffff;
         border: 2px solid;
         border-color: #000000 #5a5a5a #5a5a5a #000000;
-        padding: 8px;
         font-family: 'Rainy Hearts', sans-serif;
         font-size: 16px;
         margin-top: 4px;
@@ -139,52 +134,48 @@
         flex-direction: column;
     }
     .checkboxes-row {
-        align-items: center;
-        flex-wrap: wrap;
-    }
+    align-items: center;
+    flex-wrap: wrap;
+	}
 
     .preview-box {
         width: 325px;
         height: 377px;
         display: flex;
         justify-content: center;
-        align-items: flex-end; /* Alinea los elementos al fondo */
+        align-items: flex-end;
         background-color: #1e1e1e;
         background-image: linear-gradient(45deg, #181818 25%, transparent 25%, transparent 75%, #181818 75%, #181818), linear-gradient(45deg, #181818 25%, transparent 25%, transparent 75%, #181818 75%, #181818);
         background-size: 20px 20px;
         background-position: 0 0, 10px 10px;
-        position: relative; /* Base para las capas superpuestas */
-        padding-bottom: 20px; /* Margen inferior visual */
+        position: relative;
+        padding-bottom: 20px;
         box-sizing: border-box;
     }
     .preview-box img.base-mob {
         width: 100%;  
         height: 100%; 
         object-fit: contain; 
-        object-position: bottom center; /* Fija la imagen al suelo del contenedor */
+        object-position: bottom center;
         image-rendering: pixelated;
         position: relative;
         z-index: 1;
+        transition: width 0.2s; /* Suaviza el cambio de tamaño a Baby */
     }
-    /* 1. Modificamos la clase base para quitar el 100% de tamaño forzado */
+    
     .preview-overlay {
         position: absolute;
         image-rendering: pixelated;
-        pointer-events: none; /* Evita bloquear clics */
-        /* Centramos horizontalmente por defecto para facilitar el trabajo */
+        pointer-events: none; 
         left: 50%;
         transform: translateX(-50%);
     }
     
-    /* 2. Aquí están los controles manuales para cada pieza */
-    /* MODIFICA ESTOS NÚMEROS HASTA QUE ENCAJEN CON TU ZOMBIE/SPAWNSKIN */
-    
     #preview-layer-helmet { 
         z-index: 5; 
-        width: 128px;       /* Tamaño de la imagen del casco */
+        width: 128px;       
         height: 122px;
-        bottom: 243px;      /* Altura a la que flota (desde el suelo del cuadro) */
-        /* margin-left: 5px;   Descomenta y cambia esto si necesitas moverlo a la izquierda/derecha */
+        bottom: 243px;      
     }
 
     #preview-layer-chestplate { 
@@ -209,21 +200,6 @@
         bottom: -21px;
         left: 158px;
     }
-
-    #preview-layer-fire { 
-        z-index: 6; 
-        width: 180px; 
-        height: 382px;
-        bottom: 20px; 
-        opacity: 0.67;      /* Transparencia opcional para que se vea el mob quemándose */
-    }
-    
-    /* Control del orden de las capas (z-index) */
-    #preview-layer-boots { z-index: 2; }
-    #preview-layer-leggings { z-index: 3; }
-    #preview-layer-chestplate { z-index: 4; }
-    #preview-layer-helmet { z-index: 5; }
-    #preview-layer-fire { z-index: 6; }
 
     .modal-overlay {
         position: fixed;
@@ -312,7 +288,6 @@
         display: grid;
         grid-template-columns: repeat(9, 1fr);
         gap: 0px;
-        padding: 20px;
         flex-grow: 1;
         align-content: start;
         overflow-y: auto;
@@ -324,7 +299,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 64px;
+        height: 85px;
         cursor: pointer;
     }
     .item-slot:hover {
@@ -337,6 +312,7 @@
         object-fit: contain;
     }
 
+    /* Command Output Styles */
     .command-output {
         margin-top: 25px;
         background: #000000;
@@ -346,6 +322,26 @@
         font-family: monospace;
         word-wrap: break-word;
         font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        position: relative;
+    }
+    .command-output:hover {
+        background-color: #111111;
+    }
+    .command-output::after {
+        content: "Click to copy";
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        font-family: 'Rainy Hearts', sans-serif;
+        color: #aaaaaa;
+        font-size: 14px;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    .command-output:hover::after {
+        opacity: 1;
     }
     
     .drop-row {
@@ -377,9 +373,6 @@
         height: 32px;
         image-rendering: pixelated;
     }
-    .drop-item-selector span {
-        color: #fff;
-    }
 
     .drop-row input { margin: 0; flex: 1; }
     .drop-row button { margin: 0; padding: 6px 12px; }
@@ -394,14 +387,12 @@
     
     label { display: block; margin-top: 5px; font-weight: bold;}
     .inline-label { display: inline-flex; align-items: center; margin-top: 0; font-weight: normal; cursor: pointer;}
-    h2 { margin-top: 0; text-transform: uppercase; font-size: 24px;}
+    h2 { margin-top: 0; margin-bottom: 0; text-transform: uppercase; font-size: 24px;}
     h3 { margin-top: 0; font-size: 20px; color: #ddd;}
 
     .armor-container {
         display: flex;
         flex-direction: row;
-        gap: 4px;
-        margin-top: 15px;
         width: fit-content;
     }
     .custom-dropdown {
@@ -411,7 +402,7 @@
         user-select: none;
     }
     .dropdown-trigger {
-        width: 100%;
+        width: 90%;
         height: 100%;
         display: flex;
         justify-content: center;
@@ -449,14 +440,13 @@
         flex-direction: column;
         width: max-content;
         padding: 4px;
-        gap: 4px;
     }
     .custom-dropdown.open .dropdown-options {
         display: flex;
     }
     .dropdown-option {
         width: 56px;
-        height: 56px;
+
         display: flex;
         justify-content: center;
         align-items: center;
@@ -471,18 +461,6 @@
         height: 48px;
         image-rendering: pixelated;
     }
-    
-    .close-btn {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        padding: 6px 12px;
-        background-color: #aa0000; 
-        border-color: #ff5555 #550000 #550000 #ff5555;
-    }
-    .close-btn:active {
-        border-color: #550000 #ff5555 #ff5555 #550000;
-    }
 </style>
 </head>
 <body>
@@ -493,22 +471,21 @@
     <div class="left-col mc-ui">
         <h2>Mob Target</h2>
         <div class="preview-box mc-ui-inset">
-            <img id="mob-preview-img" class="base-mob" src="mobs/pig.png" alt="Preview" onerror="this.style.display='none'">
+            <img id="mob-preview-img" class="base-mob" src="mobs/zombie.png" alt="Preview" onerror="this.style.display='none'">
             
-            <!-- Capas de visualización (Armaduras y Fuego) -->
+            <!-- Armor Layers -->
             <img id="preview-layer-boots" class="preview-overlay" src="" style="display:none;" alt="">
             <img id="preview-layer-leggings" class="preview-overlay" src="" style="display:none;" alt="">
             <img id="preview-layer-chestplate" class="preview-overlay" src="" style="display:none;" alt="">
             <img id="preview-layer-helmet" class="preview-overlay" src="" style="display:none;" alt="">
-            <img id="preview-layer-fire" class="preview-overlay" src="mobs/fire.png" style="display:none;" alt="">
         </div>
-        <h2 id="mob-name-display" style="border:none; padding:0; margin:5px 0;">PIG</h2>
-        <button class="mc-btn" onclick="openInventory()">Seleccionar Mob</button>
+        <h2 id="mob-name-display" style="border:none; padding:0; margin:5px 0;">ZOMBIE</h2>
+        <button class="mc-btn" onclick="openInventory()">Select Mob</button>
     </div>
 
     <!-- Right Column: Options -->
     <div class="right-col mc-ui">
-        <h2>Atributos & Tags</h2>
+        <h2>Attributes & Tags</h2>
         
         <div class="input-row">
             <div class="input-group">
@@ -526,10 +503,6 @@
                 <input type="checkbox" id="inp-defaultDrops" checked onchange="generateCommand()"> 
                 Default Drops
             </label>
-            <label class="inline-label">
-                <input type="checkbox" id="inp-onFire" onchange="generateCommand()"> 
-                On Fire
-            </label>
             <label class="inline-label" id="group-charged" style="display: none;">
                 <input type="checkbox" id="inp-charged" onchange="generateCommand()"> 
                 Charged
@@ -546,21 +519,21 @@
         
         <div id="group-holding" class="conditional-group">
             <h3>Holding Item</h3>
-            <label>Item ID (ej. diamond_sword):</label>
+            <label>Item ID (e.g., diamond_sword):</label>
             <input type="text" id="inp-holding" placeholder="diamond_sword" oninput="generateCommand()">
         </div>
         
         <div id="group-armor" class="conditional-group">
             <label class="inline-label" style="font-weight:bold; font-size:16px;">
                 <input type="checkbox" id="inp-armor-enable" onchange="toggleArmorInterface(); generateCommand()"> 
-                Equipar Armadura
+                Armor
             </label>
             
             <div id="armor-selectors" class="armor-container" style="display:none;">
                 <!-- Helmet -->
                 <div class="custom-dropdown" data-slot="helmet" id="dd-helmet">
                     <div class="dropdown-trigger" onclick="toggleDropdown(this)">
-                        <span class="dropdown-placeholder">Casco</span>
+                        <span class="dropdown-placeholder">Helmet</span>
                         <img src="" style="display:none;" alt="">
                     </div>
                     <div class="dropdown-options">
@@ -575,7 +548,7 @@
                 <!-- Chestplate -->
                 <div class="custom-dropdown" data-slot="chestplate" id="dd-chestplate">
                     <div class="dropdown-trigger" onclick="toggleDropdown(this)">
-                        <span class="dropdown-placeholder">Pechera</span>
+                        <span class="dropdown-placeholder">Chestplate</span>
                         <img src="" style="display:none;" alt="">
                     </div>
                     <div class="dropdown-options">
@@ -590,7 +563,7 @@
                 <!-- Leggings -->
                 <div class="custom-dropdown" data-slot="leggings" id="dd-leggings">
                     <div class="dropdown-trigger" onclick="toggleDropdown(this)">
-                        <span class="dropdown-placeholder">Pantalón</span>
+                        <span class="dropdown-placeholder">Leggings</span>
                         <img src="" style="display:none;" alt="">
                     </div>
                     <div class="dropdown-options">
@@ -605,7 +578,7 @@
                 <!-- Boots -->
                 <div class="custom-dropdown" data-slot="boots" id="dd-boots">
                     <div class="dropdown-trigger" onclick="toggleDropdown(this)">
-                        <span class="dropdown-placeholder">Botas</span>
+                        <span class="dropdown-placeholder">Boots</span>
                         <img src="" style="display:none;" alt="">
                     </div>
                     <div class="dropdown-options">
@@ -637,7 +610,7 @@
         <div id="group-color" class="conditional-group">
             <label>Color:</label>
             <select id="inp-color" onchange="generateCommand()">
-                <option value="">(Por defecto)</option>
+                <option value="">(Default)</option>
                 <option value="red">red</option><option value="green">green</option>
                 <option value="blue">blue</option><option value="cyan">cyan</option>
                 <option value="lightblue">lightblue</option><option value="lightgreen">lightgreen</option>
@@ -652,20 +625,20 @@
         <div>
             <h2>Loot Drops</h2>
             <div id="drops-container"></div>
-            <button class="mc-btn" onclick="addDrop()">+ Añadir Drop</button>
+            <button class="mc-btn" onclick="addDrop()">+ Add Drop</button>
         </div>
 
         <!-- Output Display -->
-        <div class="command-output" id="output-command">
-            /summon pig 1 ~ ~
+        <div class="command-output" id="output-command" onclick="copyCommand()">
+            /summon zombie 1 ~ ~
         </div>
     </div>
 </div>
 
-<!-- Modal para Mobs -->
+<!-- Modal Mobs -->
 <div id="inv-modal" class="modal-overlay">
     <div class="modal-content mc-ui">
-        <h2>Seleccionar Mob</h2>
+        <h2>Select Mob</h2>
         <div class="tabs">
             <div class="tab active" onclick="switchTab('Animals', this)">Animals</div>
             <div class="tab" onclick="switchTab('Overworld', this)">Overworld</div>
@@ -674,18 +647,18 @@
         </div>
         <div class="inventory-grid mc-ui-inset" id="inv-grid"></div>
         <div style="text-align: right; margin-top: 15px;">
-            <button class="mc-btn" onclick="closeInventory()">Cancelar</button>
+            <button class="mc-btn" onclick="closeInventory()">Close</button>
         </div>
     </div>
 </div>
 
-<!-- Modal para Items (Drops) -->
+<!-- Modal Items (Drops) -->
 <div id="items-modal" class="modal-overlay">
     <div class="modal-content mc-ui" style="width: 850px; height: 580px; position: relative;">
         
         <button class="mc-btn close-btn" onclick="closeItemInventory()">X</button>
 
-        <h2 style="margin-right: 40px;">Seleccionar Item</h2>
+        <h2 style="margin-right: 40px;">Select Item</h2>
         
         <div class="tabs" id="item-tabs">
             <div class="tab active" onclick="switchItemTab('Blocks', this)">Blocks</div>
@@ -700,7 +673,7 @@
         </div>
 
         <div class="items-grid mc-ui-inset" id="items-grid">
-            <!-- Rellenado por JS -->
+            <!-- Filled by JS -->
         </div>
         
     </div>
@@ -761,24 +734,20 @@
         identifiers = identifiers.concat(arr.filter(id => id !== ""));
     });
 
-    let selectedMob = 'pig';
+    // Default setup is Zombie
+    let selectedMob = 'zombie';
     let armorState = { helmet: "", chestplate: "", leggings: "", boots: "" };
     
     let activeDropRow = null;
     let dropRowCounter = 0;
 
-   function init() {
-        switchTab('Animals', document.querySelector('.tab'));
+    function init() {
+        switchTab('Overworld', document.querySelector('.tab:nth-child(2)'));
         updateVisibility();
-        
         switchItemTab('Blocks', document.querySelector('#item-tabs .tab'));
-        
         generateCommand();
         
-        // Detecta clics en toda la pantalla
         document.addEventListener('click', function(event) {
-            
-            // 1. Cierra los dropdowns de armadura si haces clic fuera
             const dropdowns = document.querySelectorAll('.custom-dropdown');
             dropdowns.forEach(dd => {
                 if (!dd.contains(event.target)) {
@@ -786,17 +755,15 @@
                 }
             });
 
-            // 2. Cierra los modales si haces clic exactamente en el fondo oscuro (overlay)
             if (event.target.id === 'inv-modal') {
                 closeInventory();
             }
             if (event.target.id === 'items-modal') {
                 closeItemInventory();
             }
-            
         });
     }
-	
+    
     function openInventory() {
         document.getElementById('inv-modal').style.display = 'flex';
     }
@@ -811,24 +778,26 @@
         const grid = document.getElementById('inv-grid');
         grid.innerHTML = '';
         
-        mobsData[category].forEach(mob => {
-            const card = document.createElement('div');
-            card.className = 'inv-card';
-            card.onclick = () => selectMob(mob);
-            
-            const img = document.createElement('img');
-            img.src = `mobs/${mob}.png`;
-            img.alt = mob;
-            img.onerror = function() { this.style.display = 'none'; };
-            
-            const nameLabel = document.createElement('span');
-            nameLabel.className = 'inv-card-name';
-            nameLabel.textContent = mob.replace('_', ' ');
+        if (mobsData[category]) {
+            mobsData[category].forEach(mob => {
+                const card = document.createElement('div');
+                card.className = 'inv-card';
+                card.onclick = () => selectMob(mob);
+                
+                const img = document.createElement('img');
+                img.src = `mobs/${mob}.png`;
+                img.alt = mob;
+                img.onerror = function() { this.style.display = 'none'; };
+                
+                const nameLabel = document.createElement('span');
+                nameLabel.className = 'inv-card-name';
+                nameLabel.textContent = mob.replace('_', ' ');
 
-            card.appendChild(img);
-            card.appendChild(nameLabel);
-            grid.appendChild(card);
-        });
+                card.appendChild(img);
+                card.appendChild(nameLabel);
+                grid.appendChild(card);
+            });
+        }
     }
 
     function selectMob(mob) {
@@ -844,43 +813,43 @@
     }
 
     function switchItemTab(category, element) {
-    const tabsContainer = document.getElementById('item-tabs');
-    tabsContainer.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    
-    if (element) {
-        element.classList.add('active');
-    }
-
-    const grid = document.getElementById('items-grid');
-    grid.innerHTML = '';
-    
-    const items = itemsData[category] || [];
-    
-    items.forEach(id => {
-        if (id === "") {
-            const emptySlot = document.createElement('div');
-            emptySlot.className = 'item-slot';
-            emptySlot.style.cursor = 'default';
-            emptySlot.style.backgroundColor = 'transparent';
-            emptySlot.style.borderColor = 'transparent';
-            grid.appendChild(emptySlot);
-            return;
+        const tabsContainer = document.getElementById('item-tabs');
+        tabsContainer.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        
+        if (element) {
+            element.classList.add('active');
         }
 
-        const slot = document.createElement('div');
-        slot.className = 'item-slot';
-        slot.title = id; 
-        slot.onclick = () => selectDropItem(id);
+        const grid = document.getElementById('items-grid');
+        grid.innerHTML = '';
         
-        const img = document.createElement('img');
-        img.src = `items/${id}.png`;
-        img.alt = id;
-        img.onerror = function() { this.src = 'armors/empty.png'; };
+        const items = itemsData[category] || [];
         
-        slot.appendChild(img);
-        grid.appendChild(slot);
-    });
-}
+        items.forEach(id => {
+            if (id === "") {
+                const emptySlot = document.createElement('div');
+                emptySlot.className = 'item-slot';
+                emptySlot.style.cursor = 'default';
+                emptySlot.style.backgroundColor = 'transparent';
+                emptySlot.style.borderColor = 'transparent';
+                grid.appendChild(emptySlot);
+                return;
+            }
+
+            const slot = document.createElement('div');
+            slot.className = 'item-slot';
+            slot.title = id; 
+            slot.onclick = () => selectDropItem(id);
+            
+            const img = document.createElement('img');
+            img.src = `items/${id}.png`;
+            img.alt = id;
+            img.onerror = function() { this.src = 'armors/empty.png'; };
+            
+            slot.appendChild(img);
+            grid.appendChild(slot);
+        });
+    }
 
     function openItemInventory(selectorElement) {
         activeDropRow = selectorElement.closest('.drop-row');
@@ -898,29 +867,35 @@
             selector.setAttribute('data-item-id', itemId);
             
             const img = selector.querySelector('img');
-            
             img.src = `items/${itemId}.png`;
             img.onerror = function() { this.src = 'armors/empty.png'; };
             img.title = itemId; 
+
+            // Control Unbreakable Checkbox visibility based on tool selection
+            const isTool = ['pickaxe', 'hoe', 'shovel', 'sword', 'axe', 'bow', 'shears', 'fishing_rod'].some(tool => itemId.includes(tool));
+            const unbreakContainer = activeDropRow.querySelector('.drop-unbreak-container');
+            if (unbreakContainer) {
+                unbreakContainer.style.display = isTool ? 'inline-flex' : 'none';
+                if (!isTool) activeDropRow.querySelector('.drop-unbreak').checked = false;
+            }
             
             generateCommand();
         }
         closeItemInventory();
     }
 
-function addDrop() {
+    function addDrop() {
         const container = document.getElementById('drops-container');
         dropRowCounter++;
         
         const row = document.createElement('div');
         row.className = 'drop-row';
         row.id = 'drop-row-' + dropRowCounter;
-        // Aplicamos estilos en línea para forzar que sea una columna sin tocar el CSS original
         row.style.flexDirection = 'column';
         row.style.alignItems = 'stretch';
         row.style.gap = '10px';
         
-        // --- FILA 1: Ítem, Nombre, Cantidad y Botón X ---
+        // --- ROW 1: Item, Name, Unbreakable, Qty, Remove ---
         const row1 = document.createElement('div');
         row1.style.display = 'flex';
         row1.style.gap = '10px';
@@ -934,13 +909,12 @@ function addDrop() {
         
         const selectorImg = document.createElement('img');
         selectorImg.src = 'armors/empty.png';
-        selectorImg.title = "Haz clic para seleccionar ítem";
+        selectorImg.title = "Click to select item";
         selector.appendChild(selectorImg);
         
         const nameLabel = document.createElement('label');
         nameLabel.textContent = 'Name:';
         nameLabel.className = 'inline-label';
-        nameLabel.style.margin = '0 10px 0 20px';
         
         const nameInput = document.createElement('input');
         nameInput.type = 'text';
@@ -949,10 +923,23 @@ function addDrop() {
         nameInput.style.flex = '1.5';
         nameInput.oninput = generateCommand;
 
+        // Unbreakable Toggle (hidden by default)
+        const unbreakContainer = document.createElement('label');
+        unbreakContainer.className = 'inline-label drop-unbreak-container';
+        unbreakContainer.style.display = 'none';
+        unbreakContainer.style.margin = '0 10px';
+        
+        const unbreakInput = document.createElement('input');
+        unbreakInput.type = 'checkbox';
+        unbreakInput.className = 'drop-unbreak';
+        unbreakInput.onchange = generateCommand;
+        
+        unbreakContainer.appendChild(unbreakInput);
+        unbreakContainer.appendChild(document.createTextNode('Unbreakable'));
+
         const qtyLabel = document.createElement('label');
         qtyLabel.textContent = 'Qty:';
         qtyLabel.className = 'inline-label';
-        qtyLabel.style.margin = '0 10px';
         
         const qty = document.createElement('input');
         qty.type = 'number';
@@ -971,11 +958,12 @@ function addDrop() {
         row1.appendChild(selector);
         row1.appendChild(nameLabel);
         row1.appendChild(nameInput);
+        row1.appendChild(unbreakContainer);
         row1.appendChild(qtyLabel);
         row1.appendChild(qty);
         row1.appendChild(removeBtn);
 
-        // --- FILA 2: Selector Múltiple de Encantamientos ---
+        // --- ROW 2: Enchants Dropdown ---
         const row2 = document.createElement('div');
         row2.style.display = 'flex';
         row2.style.gap = '10px';
@@ -1002,57 +990,84 @@ function addDrop() {
 
         const enchPlaceholder = document.createElement('span');
         enchPlaceholder.className = 'dropdown-placeholder';
-        enchPlaceholder.textContent = 'Seleccionar Encantamientos...';
+        enchPlaceholder.textContent = 'Select Enchantments...';
         enchPlaceholder.style.fontSize = '16px';
         enchTrigger.appendChild(enchPlaceholder);
 
         const enchOptions = document.createElement('div');
         enchOptions.className = 'dropdown-options';
-        enchOptions.style.maxHeight = '200px';
+        enchOptions.style.maxHeight = '250px';
         enchOptions.style.overflowY = 'auto';
         enchOptions.style.width = '100%';
         enchOptions.style.top = '100%';
+        enchOptions.style.padding = '0'; // Clear default padding
 
-        // Lista de encantamientos
-        const allEnchants = [
-            "Protection I", "Protection II", "Protection III", "Protection IV", 
-            "Fire Protection I", "Fire Protection II", "Feather Falling I", "Feather Falling II",
-            "Blast Protection I", "Projectile Protection I", "Respiration I", "Aqua Affinity I", 
-            "Thorns I", "Sharpness I", "Sharpness II", "Sharpness III", "Sharpness IV", "Sharpness V",
-            "Smite I", "Bane of Arthropods I", "Knockback I", "Knockback II", "Fire Aspect I", "Fire Aspect II",
-            "Looting I", "Looting II", "Looting III", "Efficiency I", "Efficiency II", "Efficiency III", "Efficiency IV", "Efficiency V",
-            "Silk Touch I", "Unbreaking I", "Unbreaking II", "Unbreaking III", "Fortune I", "Fortune II", "Fortune III",
-            "Power I", "Power II", "Power III", "Power IV", "Power V", "Punch I", "Punch II", "Flame I", "Infinity I", 
-            "Luck of the Sea I", "Luck of the Sea II", "Luck of the Sea III", "Lure I", "Lure II", "Lure III"
+       // Grouped enchantments array (Mine Blocks accurate)
+        const groupedEnchants = [
+            ["Unbreaking I", "Unbreaking II", "Unbreaking III", "Unbreaking IV"],
+            ["Protection I", "Protection II", "Protection III", "Protection IV", "Protection V"],
+            ["Fire Protection I", "Fire Protection II", "Fire Protection III"],
+            ["Blast Protection I", "Blast Protection II", "Blast Protection III"],
+            ["Projectile Protection I", "Projectile Protection II", "Projectile Protection III"],
+            ["Feather Falling I", "Feather Falling II", "Feather Falling III"],
+            ["Depth Strider I", "Depth Strider II", "Depth Strider III"],
+            ["Frost Walker I", "Frost Walker II"],
+            ["Thorns I", "Thorns II", "Thorns III"],
+            ["Respiration I", "Respiration II", "Respiration III"],
+            ["Aqua Affinity I"],
+            ["Sharpness I", "Sharpness II", "Sharpness III", "Sharpness IV"],
+            ["Smite I", "Smite II", "Smite III", "Smite IV"],
+            ["Bane of Arthropods I", "Bane of Arthropods II", "Bane of Arthropods III"],
+            ["Knockback I", "Knockback II", "Knockback III"],
+            ["Fire Aspect I"],
+            ["Looting I", "Looting II", "Looting III"],
+            ["Efficiency I", "Efficiency II"],
+            ["Silk Touch I"],
+            ["Fortune I", "Fortune II", "Fortune III"],
+            ["Power I", "Power II", "Power III"],
+            ["Punch I", "Punch II"],
+            ["Flame I"],
+            ["Infinity I"],
+            ["Lure I", "Lure II", "Lure III"],
+            ["Luck of the Sea I", "Luck of the Sea II", "Luck of the Sea III"]
         ];
 
-        allEnchants.forEach(ench => {
-            const opt = document.createElement('div');
-            opt.className = 'dropdown-option mc-ui-inset ench-option';
-            opt.style.justifyContent = 'flex-start';
-            opt.style.width = 'auto';
-            opt.style.padding = '8px 10px';
-            opt.style.gap = '10px';
-            opt.setAttribute('data-value', ench);
-            opt.onclick = function(e) {
-                e.stopPropagation(); // Evita que el clic cierre el dropdown
-                toggleEnchant(this);
-            };
+        groupedEnchants.forEach(group => {
+            const groupRow = document.createElement('div');
+            groupRow.style.display = 'flex';
+            groupRow.style.flexWrap = 'wrap';
 
-            const optImg = document.createElement('img');
-            optImg.src = 'items/enchanted_book.png';
-            optImg.style.width = '24px';
-            optImg.style.height = '24px';
-            optImg.style.imageRendering = 'pixelated';
+            groupRow.style.borderBottom = '2px solid #111';
 
-            const optText = document.createElement('span');
-            optText.textContent = ench;
-            optText.style.color = '#fff';
-            optText.style.fontSize = '16px';
+            group.forEach(ench => {
+                const opt = document.createElement('div');
+                opt.className = 'dropdown-option mc-ui-inset ench-option';
+                opt.style.justifyContent = 'flex-start';
+                opt.style.width = 'auto';
+                opt.style.padding = '4px 8px';
+                opt.style.gap = '5px';
+                opt.setAttribute('data-value', ench);
+                opt.onclick = function(e) {
+                    e.stopPropagation(); 
+                    toggleEnchant(this);
+                };
 
-            opt.appendChild(optImg);
-            opt.appendChild(optText);
-            enchOptions.appendChild(opt);
+                const optImg = document.createElement('img');
+                optImg.src = 'items/enchanted_book.png';
+                optImg.style.width = '20px';
+                optImg.style.height = '20px';
+                optImg.style.imageRendering = 'pixelated';
+
+                const optText = document.createElement('span');
+                optText.textContent = ench;
+                optText.style.color = '#fff';
+                optText.style.fontSize = '16px';
+
+                opt.appendChild(optImg);
+                opt.appendChild(optText);
+                groupRow.appendChild(opt);
+            });
+            enchOptions.appendChild(groupRow);
         });
 
         enchDropdown.appendChild(enchTrigger);
@@ -1067,28 +1082,25 @@ function addDrop() {
         container.appendChild(row);
         openItemInventory(selector);
     }
-	
-	function toggleEnchant(optionElement) {
+    
+    function toggleEnchant(optionElement) {
         const value = optionElement.getAttribute('data-value');
         const dropdown = optionElement.closest('.custom-dropdown');
         const trigger = dropdown.querySelector('.dropdown-trigger');
         const placeholder = trigger.querySelector('.dropdown-placeholder');
 
         if (optionElement.classList.contains('selected-ench')) {
-            // Deseleccionar
             optionElement.classList.remove('selected-ench');
             optionElement.style.backgroundColor = '';
             const iconToRemove = trigger.querySelector(`img[title="${value}"]`);
             if (iconToRemove) iconToRemove.remove();
         } else {
-            // Seleccionar
             optionElement.classList.add('selected-ench');
             optionElement.style.backgroundColor = '#555555';
             
-            // Crea el libro encantado que se muestra en el cuadro
             const icon = document.createElement('img');
             icon.src = 'items/enchanted_book.png';
-            icon.title = value; // Aquí es donde se guarda el texto para el Hover
+            icon.title = value; 
             icon.className = 'ench-icon';
             icon.style.width = '32px';
             icon.style.height = '32px';
@@ -1096,7 +1108,6 @@ function addDrop() {
             trigger.appendChild(icon);
         }
 
-        // Controla si se muestra u oculta el texto "Seleccionar Encantamientos..."
         if (trigger.querySelectorAll('.ench-icon').length > 0) {
             placeholder.style.display = 'none';
         } else {
@@ -1105,7 +1116,7 @@ function addDrop() {
 
         generateCommand();
     }
-	
+    
     function updateVisibility() {
         const mob = selectedMob;
         const show = (id, condition, displayType = 'block') => {
@@ -1125,9 +1136,33 @@ function addDrop() {
         show('group-sheared', mob === 'sheep', 'inline-flex');
     }
 
+    // Función de apoyo para cambiar el ítem de la armadura visualmente y en el código
+    function setArmorSlot(slotType, value) {
+        armorState[slotType] = value;
+        const dropdown = document.getElementById(`dd-${slotType}`);
+        if (!dropdown) return;
+        
+        const triggerImg = dropdown.querySelector('.dropdown-trigger img');
+        const triggerText = dropdown.querySelector('.dropdown-placeholder');
+
+        triggerImg.src = `armors/${value}.png`;
+        triggerImg.style.display = 'block';
+        triggerText.style.display = 'none';
+    }
+
     function toggleArmorInterface() {
         const isEnabled = document.getElementById('inp-armor-enable').checked;
         document.getElementById('armor-selectors').style.display = isEnabled ? 'flex' : 'none';
+
+        // Si se activa y la armadura está vacía, equipar diamante por defecto
+        if (isEnabled && !armorState.helmet && !armorState.chestplate && !armorState.leggings && !armorState.boots) {
+            setArmorSlot('helmet', 'diamond_helmet');
+            setArmorSlot('chestplate', 'diamond_chestplate');
+            setArmorSlot('leggings', 'diamond_leggings');
+            setArmorSlot('boots', 'diamond_boots');
+        }
+        
+        generateCommand();
     }
 
     function toggleDropdown(triggerElement) {
@@ -1165,6 +1200,18 @@ function addDrop() {
         generateCommand();
     }
 
+    function copyCommand() {
+        const cmdText = document.getElementById('output-command').textContent.trim();
+        navigator.clipboard.writeText(cmdText).then(() => {
+            const out = document.getElementById('output-command');
+            const originalBg = out.style.backgroundColor;
+            out.style.backgroundColor = '#225522'; // Flash green
+            setTimeout(() => {
+                out.style.backgroundColor = originalBg;
+            }, 250);
+        });
+    }
+
     function generateCommand() {
         let tags = [];
         
@@ -1177,19 +1224,20 @@ function addDrop() {
         const defaultDrops = document.getElementById('inp-defaultDrops').checked;
         tags.push(`defaultDrops:${defaultDrops}`);
         
-        const onFire = document.getElementById('inp-onFire').checked;
-        if (onFire) tags.push(`onFire:true`);
+        // Handle Baby visual scaling
+        const babyCheckbox = document.getElementById('inp-baby');
+        const baseMobImg = document.querySelector('.preview-box img.base-mob');
+        if (babyCheckbox && babyCheckbox.checked && ['chicken', 'sheep', 'rabbit', 'pig', 'wolf', 'cow', 'mooshroom', 'cowctus'].includes(selectedMob)) {
+            baseMobImg.style.width = '67%';
+        } else {
+            baseMobImg.style.width = '100%';
+        }
 
-        // Actualizar visual de fuego en la preview
-        const fireLayer = document.getElementById('preview-layer-fire');
-        if (fireLayer) fireLayer.style.display = onFire ? 'block' : 'none';
-        
         if (['enderman', 'zombie_pigman'].includes(selectedMob)) {
             const holding = document.getElementById('inp-holding').value.trim();
             if (holding) tags.push(`holding:"${holding}"`);
         }
         
-        // Actualizar armadura en el comando y en la preview
         const armorEnabled = document.getElementById('inp-armor-enable').checked && ['zombie', 'spawnskin'].includes(selectedMob);
         
         if (armorEnabled) {
@@ -1240,7 +1288,6 @@ function addDrop() {
             if (sheared) tags.push(`sheared:true`);
         }
         
-        // Custom Drops Processor
         const dropRows = document.querySelectorAll('.drop-row');
         if (dropRows.length > 0) {
             let dropsArray = [];
@@ -1250,8 +1297,8 @@ function addDrop() {
                 const itemId = selector.getAttribute('data-item-id');
                 const itemName = row.querySelector('.drop-name').value.trim();
                 const qty = row.querySelector('.drop-qty').value || 1;
+                const isUnbreakable = row.querySelector('.drop-unbreak') ? row.querySelector('.drop-unbreak').checked : false;
                 
-                // Extraer todos los encantamientos seleccionados de esta fila
                 const selectedEnchElements = row.querySelectorAll('.ench-option.selected-ench');
                 let enchantsList = [];
                 selectedEnchElements.forEach(el => {
@@ -1263,6 +1310,10 @@ function addDrop() {
                     
                     if (itemName) {
                         itemProps.push(`name:"${itemName}"`);
+                    }
+
+                    if (isUnbreakable) {
+                        itemProps.push(`unbreakable:true`);
                     }
                     
                     if (enchantsList.length > 0) {
