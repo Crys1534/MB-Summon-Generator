@@ -915,7 +915,18 @@ function addDrop() {
         const row = document.createElement('div');
         row.className = 'drop-row';
         row.id = 'drop-row-' + dropRowCounter;
+        // Aplicamos estilos en línea para forzar que sea una columna sin tocar el CSS original
+        row.style.flexDirection = 'column';
+        row.style.alignItems = 'stretch';
+        row.style.gap = '10px';
         
+        // --- FILA 1: Ítem, Nombre, Cantidad y Botón X ---
+        const row1 = document.createElement('div');
+        row1.style.display = 'flex';
+        row1.style.gap = '10px';
+        row1.style.alignItems = 'center';
+        row1.style.width = '100%';
+
         const selector = document.createElement('div');
         selector.className = 'drop-item-selector';
         selector.setAttribute('data-item-id', '');
@@ -924,7 +935,6 @@ function addDrop() {
         const selectorImg = document.createElement('img');
         selectorImg.src = 'armors/empty.png';
         selectorImg.title = "Haz clic para seleccionar ítem";
-        
         selector.appendChild(selectorImg);
         
         const nameLabel = document.createElement('label');
@@ -958,17 +968,144 @@ function addDrop() {
         removeBtn.style.padding = "6px 12px";
         removeBtn.onclick = () => { row.remove(); generateCommand(); };
         
-        row.appendChild(selector);
-        row.appendChild(nameLabel);
-        row.appendChild(nameInput);
-        row.appendChild(qtyLabel);
-        row.appendChild(qty);
-        row.appendChild(removeBtn);
-        container.appendChild(row);
+        row1.appendChild(selector);
+        row1.appendChild(nameLabel);
+        row1.appendChild(nameInput);
+        row1.appendChild(qtyLabel);
+        row1.appendChild(qty);
+        row1.appendChild(removeBtn);
+
+        // --- FILA 2: Selector Múltiple de Encantamientos ---
+        const row2 = document.createElement('div');
+        row2.style.display = 'flex';
+        row2.style.gap = '10px';
+        row2.style.alignItems = 'flex-start';
+
+        const enchLabel = document.createElement('label');
+        enchLabel.textContent = 'Enchants:';
+        enchLabel.className = 'inline-label';
+        enchLabel.style.marginTop = '6px';
+
+        const enchDropdown = document.createElement('div');
+        enchDropdown.className = 'custom-dropdown ench-dropdown';
+        enchDropdown.style.width = '100%';
+        enchDropdown.style.height = 'auto';
+        enchDropdown.style.minHeight = '48px';
+
+        const enchTrigger = document.createElement('div');
+        enchTrigger.className = 'dropdown-trigger';
+        enchTrigger.style.justifyContent = 'flex-start';
+        enchTrigger.style.padding = '4px 10px';
+        enchTrigger.style.flexWrap = 'wrap';
+        enchTrigger.style.gap = '6px';
+        enchTrigger.onclick = function() { toggleDropdown(this); };
+
+        const enchPlaceholder = document.createElement('span');
+        enchPlaceholder.className = 'dropdown-placeholder';
+        enchPlaceholder.textContent = 'Seleccionar Encantamientos...';
+        enchPlaceholder.style.fontSize = '16px';
+        enchTrigger.appendChild(enchPlaceholder);
+
+        const enchOptions = document.createElement('div');
+        enchOptions.className = 'dropdown-options';
+        enchOptions.style.maxHeight = '200px';
+        enchOptions.style.overflowY = 'auto';
+        enchOptions.style.width = '100%';
+        enchOptions.style.top = '100%';
+
+        // Lista de encantamientos
+        const allEnchants = [
+            "Protection I", "Protection II", "Protection III", "Protection IV", 
+            "Fire Protection I", "Fire Protection II", "Feather Falling I", "Feather Falling II",
+            "Blast Protection I", "Projectile Protection I", "Respiration I", "Aqua Affinity I", 
+            "Thorns I", "Sharpness I", "Sharpness II", "Sharpness III", "Sharpness IV", "Sharpness V",
+            "Smite I", "Bane of Arthropods I", "Knockback I", "Knockback II", "Fire Aspect I", "Fire Aspect II",
+            "Looting I", "Looting II", "Looting III", "Efficiency I", "Efficiency II", "Efficiency III", "Efficiency IV", "Efficiency V",
+            "Silk Touch I", "Unbreaking I", "Unbreaking II", "Unbreaking III", "Fortune I", "Fortune II", "Fortune III",
+            "Power I", "Power II", "Power III", "Power IV", "Power V", "Punch I", "Punch II", "Flame I", "Infinity I", 
+            "Luck of the Sea I", "Luck of the Sea II", "Luck of the Sea III", "Lure I", "Lure II", "Lure III"
+        ];
+
+        allEnchants.forEach(ench => {
+            const opt = document.createElement('div');
+            opt.className = 'dropdown-option mc-ui-inset ench-option';
+            opt.style.justifyContent = 'flex-start';
+            opt.style.width = 'auto';
+            opt.style.padding = '8px 10px';
+            opt.style.gap = '10px';
+            opt.setAttribute('data-value', ench);
+            opt.onclick = function(e) {
+                e.stopPropagation(); // Evita que el clic cierre el dropdown
+                toggleEnchant(this);
+            };
+
+            const optImg = document.createElement('img');
+            optImg.src = 'items/enchanted_book.png';
+            optImg.style.width = '24px';
+            optImg.style.height = '24px';
+            optImg.style.imageRendering = 'pixelated';
+
+            const optText = document.createElement('span');
+            optText.textContent = ench;
+            optText.style.color = '#fff';
+            optText.style.fontSize = '16px';
+
+            opt.appendChild(optImg);
+            opt.appendChild(optText);
+            enchOptions.appendChild(opt);
+        });
+
+        enchDropdown.appendChild(enchTrigger);
+        enchDropdown.appendChild(enchOptions);
+
+        row2.appendChild(enchLabel);
+        row2.appendChild(enchDropdown);
+
+        row.appendChild(row1);
+        row.appendChild(row2);
         
+        container.appendChild(row);
         openItemInventory(selector);
     }
-    
+	
+	function toggleEnchant(optionElement) {
+        const value = optionElement.getAttribute('data-value');
+        const dropdown = optionElement.closest('.custom-dropdown');
+        const trigger = dropdown.querySelector('.dropdown-trigger');
+        const placeholder = trigger.querySelector('.dropdown-placeholder');
+
+        if (optionElement.classList.contains('selected-ench')) {
+            // Deseleccionar
+            optionElement.classList.remove('selected-ench');
+            optionElement.style.backgroundColor = '';
+            const iconToRemove = trigger.querySelector(`img[title="${value}"]`);
+            if (iconToRemove) iconToRemove.remove();
+        } else {
+            // Seleccionar
+            optionElement.classList.add('selected-ench');
+            optionElement.style.backgroundColor = '#555555';
+            
+            // Crea el libro encantado que se muestra en el cuadro
+            const icon = document.createElement('img');
+            icon.src = 'items/enchanted_book.png';
+            icon.title = value; // Aquí es donde se guarda el texto para el Hover
+            icon.className = 'ench-icon';
+            icon.style.width = '32px';
+            icon.style.height = '32px';
+            icon.style.imageRendering = 'pixelated';
+            trigger.appendChild(icon);
+        }
+
+        // Controla si se muestra u oculta el texto "Seleccionar Encantamientos..."
+        if (trigger.querySelectorAll('.ench-icon').length > 0) {
+            placeholder.style.display = 'none';
+        } else {
+            placeholder.style.display = 'block';
+        }
+
+        generateCommand();
+    }
+	
     function updateVisibility() {
         const mob = selectedMob;
         const show = (id, condition, displayType = 'block') => {
@@ -1103,23 +1240,39 @@ function addDrop() {
             if (sheared) tags.push(`sheared:true`);
         }
         
+        // Custom Drops Processor
         const dropRows = document.querySelectorAll('.drop-row');
         if (dropRows.length > 0) {
             let dropsArray = [];
+            
             dropRows.forEach(row => {
                 const selector = row.querySelector('.drop-item-selector');
                 const itemId = selector.getAttribute('data-item-id');
                 const itemName = row.querySelector('.drop-name').value.trim();
                 const qty = row.querySelector('.drop-qty').value || 1;
                 
+                // Extraer todos los encantamientos seleccionados de esta fila
+                const selectedEnchElements = row.querySelectorAll('.ench-option.selected-ench');
+                let enchantsList = [];
+                selectedEnchElements.forEach(el => {
+                    enchantsList.push(`"${el.getAttribute('data-value')}"`);
+                });
+
                 if (itemId) {
+                    let itemProps = [`id:"${itemId}"`];
+                    
                     if (itemName) {
-                        dropsArray.push(`{item:{id:"${itemId}", name:"${itemName}"}, quantity:${qty}}`);
-                    } else {
-                        dropsArray.push(`{item:{id:"${itemId}"}, quantity:${qty}}`);
+                        itemProps.push(`name:"${itemName}"`);
                     }
+                    
+                    if (enchantsList.length > 0) {
+                        itemProps.push(`enchantments:[${enchantsList.join(', ')}]`);
+                    }
+                    
+                    dropsArray.push(`{item:{${itemProps.join(', ')}}, quantity:${qty}}`);
                 }
             });
+            
             if (dropsArray.length > 0) {
                 tags.push(`drops:[${dropsArray.join(', ')}]`);
             }
