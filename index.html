@@ -158,14 +158,20 @@
         box-sizing: border-box;
     }
     .preview-box img.base-mob {
-        width: 100%;  
-        height: 100%; 
-        object-fit: contain; 
-        object-position: bottom center;
-        image-rendering: pixelated;
-        position: relative;
+        position: absolute;
         z-index: 1;
-        transition: width 0.2s; 
+        image-rendering: pixelated;
+        pointer-events: none; 
+        
+        /* Controles manuales para el Mob / Skin */
+        width: 145px;       /* Modifica el ancho aquí */
+        height: 200px;      /* Modifica el alto aquí (16x22 aprox) */
+        bottom: 20px;       /* Altura desde el suelo */
+        
+        left: 50%;
+        transform: translateX(-50%) scale(1);
+        transform-origin: bottom center;
+        transition: transform 0.2s; /* Suaviza la transición a Baby */
     }
     
     .preview-overlay {
@@ -785,16 +791,33 @@
         if (skinId) {
             const imgEl = document.getElementById('mob-preview-img');
             
-            // 1. Autorizamos la petición de origen cruzado
-            imgEl.crossOrigin = "Anonymous";
+            const tempImg = new Image();
+            tempImg.crossOrigin = "Anonymous";
             
-            // 2. Rompemos el caché agregando el timestamp exacto
-            imgEl.src = `https://mineblocks.com/1/skins/${skinId}.png?t=` + new Date().getTime();
+            tempImg.onload = function() {
+                // Creamos un canvas virtual
+                const canvas = document.createElement('canvas');
+                canvas.width = 16;
+                canvas.height = 22;
+                const ctx = canvas.getContext('2d');
+                
+                ctx.imageSmoothingEnabled = false;
+                
+                // Recortamos exactamente x:0, y:0, width:16, height:22
+                ctx.drawImage(tempImg, 0, 0, 16, 22, 0, 0, 16, 22);
+                
+                // Inyectamos el recorte como Base64
+                imgEl.src = canvas.toDataURL('image/png');
+                imgEl.style.display = 'block';
+            };
             
-            imgEl.style.display = 'block';
+            tempImg.onerror = function() {
+                console.error("Error loading skin");
+            };
+            
+            tempImg.src = `https://mineblocks.com/1/skins/${skinId}.png?t=` + new Date().getTime();
         }
     }
-	
     function switchTab(category, element) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         if(element) element.classList.add('active');
@@ -1245,12 +1268,13 @@
         const defaultDrops = document.getElementById('inp-defaultDrops').checked;
         tags.push(`defaultDrops:${defaultDrops}`);
         
+        // Handle Baby visual scaling
         const babyCheckbox = document.getElementById('inp-baby');
         const baseMobImg = document.querySelector('.preview-box img.base-mob');
         if (babyCheckbox && babyCheckbox.checked && ['chicken', 'sheep', 'rabbit', 'pig', 'wolf', 'cow', 'mooshroom', 'cowctus'].includes(selectedMob)) {
-            baseMobImg.style.width = '67%';
+            baseMobImg.style.transform = 'translateX(-50%) scale(0.67)';
         } else {
-            baseMobImg.style.width = '100%';
+            baseMobImg.style.transform = 'translateX(-50%) scale(1)';
         }
 
         if (['enderman', 'zombie_pigman'].includes(selectedMob)) {
