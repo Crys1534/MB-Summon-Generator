@@ -784,8 +784,8 @@
         const skinId = document.getElementById('inp-skin').value;
         if (skinId) {
             const imgEl = document.getElementById('mob-preview-img');
-            // Usar la ruta correcta de la API para obtener el archivo .png puro
-            imgEl.src = `https://mineblocks.com/1/api/skin/${skinId}.png`;
+            // La carpeta correcta en el servidor es "skins" en plural
+            imgEl.src = `https://mineblocks.com/1/skins/${skinId}.png`;
             imgEl.style.display = 'block';
         }
     }
