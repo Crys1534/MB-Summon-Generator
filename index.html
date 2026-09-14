@@ -29,7 +29,7 @@
     
     .mc-ui-inset {
         background-color: #1e1e1e;
-        border: 1px solid;
+        border: 4px solid;
         border-color: #111111 #5a5a5a #5a5a5a #111111;
     }
 
@@ -80,6 +80,7 @@
         color: #ffffff;
         border: 2px solid;
         border-color: #000000 #5a5a5a #5a5a5a #000000;
+        padding: 8px;
         font-family: 'Rainy Hearts', sans-serif;
         font-size: 16px;
         margin-top: 4px;
@@ -134,9 +135,13 @@
         flex-direction: column;
     }
     .checkboxes-row {
-    align-items: center;
-    flex-wrap: wrap;
-	}
+        align-items: center;
+        margin-top: -5px;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #111;
+        flex-wrap: wrap;
+    }
 
     .preview-box {
         width: 325px;
@@ -160,7 +165,7 @@
         image-rendering: pixelated;
         position: relative;
         z-index: 1;
-        transition: width 0.2s; /* Suaviza el cambio de tamaño a Baby */
+        transition: width 0.2s; 
     }
     
     .preview-overlay {
@@ -312,7 +317,6 @@
         object-fit: contain;
     }
 
-    /* Command Output Styles */
     .command-output {
         margin-top: 25px;
         background: #000000;
@@ -446,8 +450,7 @@
     }
     .dropdown-option {
         width: 56px;
-		height: 56px;
-
+        height: 56px;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -488,6 +491,7 @@
     <div class="right-col mc-ui">
         <h2>Attributes & Tags</h2>
         
+        <!-- Fila modificada para incluir Skin ID a la derecha -->
         <div class="input-row">
             <div class="input-group">
                 <label>Custom Name:</label>
@@ -496,6 +500,13 @@
             <div class="input-group">
                 <label>Health:</label>
                 <input type="number" id="inp-health" placeholder="20" oninput="generateCommand()">
+            </div>
+            <div class="input-group" id="group-skin" style="display: none;">
+                <label>Skin ID:</label>
+                <div style="display: flex; gap: 5px;">
+                    <input type="number" id="inp-skin" placeholder="1" min="1" oninput="generateCommand()" style="flex: 1;">
+                    <button class="mc-btn" onclick="searchSkin()" style="padding: 4px 8px; font-size: 16px;">Search</button>
+                </div>
             </div>
         </div>
         
@@ -524,88 +535,86 @@
             <input type="text" id="inp-holding" placeholder="diamond_sword" oninput="generateCommand()">
         </div>
         
-        <div id="group-armor" class="conditional-group">
-            <label class="inline-label" style="font-weight:bold; font-size:16px;">
-                <input type="checkbox" id="inp-armor-enable" onchange="toggleArmorInterface(); generateCommand()"> 
-                Armor
-            </label>
-            
-            <div id="armor-selectors" class="armor-container" style="display:none;">
-                <!-- Helmet -->
-                <div class="custom-dropdown" data-slot="helmet" id="dd-helmet">
-                    <div class="dropdown-trigger" onclick="toggleDropdown(this)">
-                        <span class="dropdown-placeholder">Helmet</span>
-                        <img src="" style="display:none;" alt="">
+        <!-- Contenedor para Armor y Aggro lado a lado -->
+        <div class="input-row" style="margin-bottom: 0; align-items: stretch;">
+            <div id="group-armor" class="conditional-group" style="flex: 2; margin-bottom: 15px;">
+                <label class="inline-label" style="font-weight:bold; font-size:16px;">
+                    <input type="checkbox" id="inp-armor-enable" onchange="toggleArmorInterface(); generateCommand()"> 
+                    Armor
+                </label>
+                
+                <div id="armor-selectors" class="armor-container" style="display:none; margin-top: 15px;">
+                    <!-- Helmet -->
+                    <div class="custom-dropdown" data-slot="helmet" id="dd-helmet">
+                        <div class="dropdown-trigger" onclick="toggleDropdown(this)">
+                            <span class="dropdown-placeholder">Helmet</span>
+                            <img src="" style="display:none;" alt="">
+                        </div>
+                        <div class="dropdown-options">
+                            <div class="dropdown-option mc-ui-inset" data-value="" onclick="selectArmorOption(this)"><img src="armors/empty.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="leather_cap" onclick="selectArmorOption(this)"><img src="armors/leather_cap.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="iron_helmet" onclick="selectArmorOption(this)"><img src="armors/iron_helmet.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="gold_helmet" onclick="selectArmorOption(this)"><img src="armors/gold_helmet.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="diamond_helmet" onclick="selectArmorOption(this)"><img src="armors/diamond_helmet.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="dragon_scale_helmet" onclick="selectArmorOption(this)"><img src="armors/dragon_scale_helmet.png" onerror="this.style.display='none'"></div>
+                        </div>
                     </div>
-                    <div class="dropdown-options">
-                        <div class="dropdown-option mc-ui-inset" data-value="" onclick="selectArmorOption(this)"><img src="armors/empty.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="leather_cap" onclick="selectArmorOption(this)"><img src="armors/leather_cap.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="iron_helmet" onclick="selectArmorOption(this)"><img src="armors/iron_helmet.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="gold_helmet" onclick="selectArmorOption(this)"><img src="armors/gold_helmet.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="diamond_helmet" onclick="selectArmorOption(this)"><img src="armors/diamond_helmet.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="dragon_scale_helmet" onclick="selectArmorOption(this)"><img src="armors/dragon_scale_helmet.png" onerror="this.style.display='none'"></div>
+                    <!-- Chestplate -->
+                    <div class="custom-dropdown" data-slot="chestplate" id="dd-chestplate">
+                        <div class="dropdown-trigger" onclick="toggleDropdown(this)">
+                            <span class="dropdown-placeholder">Chestplate</span>
+                            <img src="" style="display:none;" alt="">
+                        </div>
+                        <div class="dropdown-options">
+                            <div class="dropdown-option mc-ui-inset" data-value="" onclick="selectArmorOption(this)"><img src="armors/empty.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="leather_tunic" onclick="selectArmorOption(this)"><img src="armors/leather_tunic.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="iron_chestplate" onclick="selectArmorOption(this)"><img src="armors/iron_chestplate.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="gold_chestplate" onclick="selectArmorOption(this)"><img src="armors/gold_chestplate.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="diamond_chestplate" onclick="selectArmorOption(this)"><img src="armors/diamond_chestplate.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="dragon_scale_chestplate" onclick="selectArmorOption(this)"><img src="armors/dragon_scale_chestplate.png" onerror="this.style.display='none'"></div>
+                        </div>
                     </div>
-                </div>
-                <!-- Chestplate -->
-                <div class="custom-dropdown" data-slot="chestplate" id="dd-chestplate">
-                    <div class="dropdown-trigger" onclick="toggleDropdown(this)">
-                        <span class="dropdown-placeholder">Chestplate</span>
-                        <img src="" style="display:none;" alt="">
+                    <!-- Leggings -->
+                    <div class="custom-dropdown" data-slot="leggings" id="dd-leggings">
+                        <div class="dropdown-trigger" onclick="toggleDropdown(this)">
+                            <span class="dropdown-placeholder">Leggings</span>
+                            <img src="" style="display:none;" alt="">
+                        </div>
+                        <div class="dropdown-options">
+                            <div class="dropdown-option mc-ui-inset" data-value="" onclick="selectArmorOption(this)"><img src="armors/empty.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="leather_pants" onclick="selectArmorOption(this)"><img src="armors/leather_pants.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="iron_leggings" onclick="selectArmorOption(this)"><img src="armors/iron_leggings.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="gold_leggings" onclick="selectArmorOption(this)"><img src="armors/gold_leggings.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="diamond_leggings" onclick="selectArmorOption(this)"><img src="armors/diamond_leggings.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="dragon_scale_leggings" onclick="selectArmorOption(this)"><img src="armors/dragon_scale_leggings.png" onerror="this.style.display='none'"></div>
+                        </div>
                     </div>
-                    <div class="dropdown-options">
-                        <div class="dropdown-option mc-ui-inset" data-value="" onclick="selectArmorOption(this)"><img src="armors/empty.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="leather_tunic" onclick="selectArmorOption(this)"><img src="armors/leather_tunic.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="iron_chestplate" onclick="selectArmorOption(this)"><img src="armors/iron_chestplate.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="gold_chestplate" onclick="selectArmorOption(this)"><img src="armors/gold_chestplate.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="diamond_chestplate" onclick="selectArmorOption(this)"><img src="armors/diamond_chestplate.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="dragon_scale_chestplate" onclick="selectArmorOption(this)"><img src="armors/dragon_scale_chestplate.png" onerror="this.style.display='none'"></div>
-                    </div>
-                </div>
-                <!-- Leggings -->
-                <div class="custom-dropdown" data-slot="leggings" id="dd-leggings">
-                    <div class="dropdown-trigger" onclick="toggleDropdown(this)">
-                        <span class="dropdown-placeholder">Leggings</span>
-                        <img src="" style="display:none;" alt="">
-                    </div>
-                    <div class="dropdown-options">
-                        <div class="dropdown-option mc-ui-inset" data-value="" onclick="selectArmorOption(this)"><img src="armors/empty.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="leather_pants" onclick="selectArmorOption(this)"><img src="armors/leather_pants.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="iron_leggings" onclick="selectArmorOption(this)"><img src="armors/iron_leggings.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="gold_leggings" onclick="selectArmorOption(this)"><img src="armors/gold_leggings.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="diamond_leggings" onclick="selectArmorOption(this)"><img src="armors/diamond_leggings.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="dragon_scale_leggings" onclick="selectArmorOption(this)"><img src="armors/dragon_scale_leggings.png" onerror="this.style.display='none'"></div>
-                    </div>
-                </div>
-                <!-- Boots -->
-                <div class="custom-dropdown" data-slot="boots" id="dd-boots">
-                    <div class="dropdown-trigger" onclick="toggleDropdown(this)">
-                        <span class="dropdown-placeholder">Boots</span>
-                        <img src="" style="display:none;" alt="">
-                    </div>
-                    <div class="dropdown-options">
-                        <div class="dropdown-option mc-ui-inset" data-value="" onclick="selectArmorOption(this)"><img src="armors/empty.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="leather_boots" onclick="selectArmorOption(this)"><img src="armors/leather_boots.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="iron_boots" onclick="selectArmorOption(this)"><img src="armors/iron_boots.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="gold_boots" onclick="selectArmorOption(this)"><img src="armors/gold_boots.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="diamond_boots" onclick="selectArmorOption(this)"><img src="armors/diamond_boots.png" onerror="this.style.display='none'"></div>
-                        <div class="dropdown-option mc-ui-inset" data-value="dragon_scale_boots" onclick="selectArmorOption(this)"><img src="armors/dragon_scale_boots.png" onerror="this.style.display='none'"></div>
+                    <!-- Boots -->
+                    <div class="custom-dropdown" data-slot="boots" id="dd-boots">
+                        <div class="dropdown-trigger" onclick="toggleDropdown(this)">
+                            <span class="dropdown-placeholder">Boots</span>
+                            <img src="" style="display:none;" alt="">
+                        </div>
+                        <div class="dropdown-options">
+                            <div class="dropdown-option mc-ui-inset" data-value="" onclick="selectArmorOption(this)"><img src="armors/empty.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="leather_boots" onclick="selectArmorOption(this)"><img src="armors/leather_boots.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="iron_boots" onclick="selectArmorOption(this)"><img src="armors/iron_boots.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="gold_boots" onclick="selectArmorOption(this)"><img src="armors/gold_boots.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="diamond_boots" onclick="selectArmorOption(this)"><img src="armors/diamond_boots.png" onerror="this.style.display='none'"></div>
+                            <div class="dropdown-option mc-ui-inset" data-value="dragon_scale_boots" onclick="selectArmorOption(this)"><img src="armors/dragon_scale_boots.png" onerror="this.style.display='none'"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div id="group-aggro" class="conditional-group">
-            <label>Aggro:</label>
-            <select id="inp-aggro" onchange="generateCommand()">
-                <option value="neutral">neutral</option>
-                <option value="hostile">hostile</option>
-                <option value="passive">passive</option>
-            </select>
-        </div>
-
-        <div id="group-skin" class="conditional-group">
-            <label>Skin ID:</label>
-            <input type="number" id="inp-skin" placeholder="1" oninput="generateCommand()">
+            <div id="group-aggro" class="conditional-group" style="flex: 1; margin-bottom: 15px;">
+                <label>Aggro:</label>
+                <select id="inp-aggro" onchange="generateCommand()">
+                    <option value="neutral">neutral</option>
+                    <option value="hostile">hostile</option>
+                    <option value="passive">passive</option>
+                </select>
+            </div>
         </div>
 
         <div id="group-color" class="conditional-group">
@@ -735,7 +744,6 @@
         identifiers = identifiers.concat(arr.filter(id => id !== ""));
     });
 
-    // Default setup is Zombie
     let selectedMob = 'zombie';
     let armorState = { helmet: "", chestplate: "", leggings: "", boots: "" };
     
@@ -770,6 +778,15 @@
     }
     function closeInventory() {
         document.getElementById('inv-modal').style.display = 'none';
+    }
+
+    function searchSkin() {
+        const skinId = document.getElementById('inp-skin').value;
+        if (skinId) {
+            const imgEl = document.getElementById('mob-preview-img');
+            imgEl.src = `https://mineblocks.com/1/skin/${skinId}`;
+            imgEl.style.display = 'block';
+        }
     }
 
     function switchTab(category, element) {
@@ -916,6 +933,7 @@
         const nameLabel = document.createElement('label');
         nameLabel.textContent = 'Name:';
         nameLabel.className = 'inline-label';
+        nameLabel.style.margin = '0 10px 0 20px';
         
         const nameInput = document.createElement('input');
         nameInput.type = 'text';
@@ -924,7 +942,6 @@
         nameInput.style.flex = '1.5';
         nameInput.oninput = generateCommand;
 
-        // Unbreakable Toggle (hidden by default)
         const unbreakContainer = document.createElement('label');
         unbreakContainer.className = 'inline-label drop-unbreak-container';
         unbreakContainer.style.display = 'none';
@@ -1001,9 +1018,8 @@
         enchOptions.style.overflowY = 'auto';
         enchOptions.style.width = '100%';
         enchOptions.style.top = '100%';
-        enchOptions.style.padding = '0'; // Clear default padding
+        enchOptions.style.padding = '0';
 
-       // Grouped enchantments array (Mine Blocks accurate)
         const groupedEnchants = [
             ["Unbreaking I", "Unbreaking II", "Unbreaking III", "Unbreaking IV"],
             ["Protection I", "Protection II", "Protection III", "Protection IV", "Protection V"],
@@ -1037,7 +1053,6 @@
             const groupRow = document.createElement('div');
             groupRow.style.display = 'flex';
             groupRow.style.flexWrap = 'wrap';
-
             groupRow.style.borderBottom = '2px solid #111';
 
             group.forEach(ench => {
@@ -1045,10 +1060,7 @@
                 opt.className = 'dropdown-option mc-ui-inset ench-option';
                 opt.style.justifyContent = 'flex-start';
                 opt.style.width = 'auto';
-                
-                // ¡AQUÍ ESTÁ LA NUEVA LÍNEA!
                 opt.style.height = 'auto'; 
-                
                 opt.style.padding = '4px 8px';
                 opt.style.gap = '5px';
                 opt.setAttribute('data-value', ench);
@@ -1134,14 +1146,13 @@
         show('group-holding', ['enderman', 'zombie_pigman'].includes(mob));
         show('group-armor', ['zombie', 'spawnskin'].includes(mob));
         show('group-aggro', mob === 'spawnskin');
-        show('group-skin', mob === 'spawnskin');
+        show('group-skin', mob === 'spawnskin', 'flex');
         show('group-color', ['sheep', 'dog'].includes(mob));
         show('group-charged', mob === 'creeper', 'inline-flex');
         show('group-baby', ['chicken', 'sheep', 'rabbit', 'pig', 'wolf', 'cow', 'mooshroom', 'cowctus'].includes(mob), 'inline-flex');
         show('group-sheared', mob === 'sheep', 'inline-flex');
     }
 
-    // Función de apoyo para cambiar el ítem de la armadura visualmente y en el código
     function setArmorSlot(slotType, value) {
         armorState[slotType] = value;
         const dropdown = document.getElementById(`dd-${slotType}`);
@@ -1159,7 +1170,6 @@
         const isEnabled = document.getElementById('inp-armor-enable').checked;
         document.getElementById('armor-selectors').style.display = isEnabled ? 'flex' : 'none';
 
-        // Si se activa y la armadura está vacía, equipar diamante por defecto
         if (isEnabled && !armorState.helmet && !armorState.chestplate && !armorState.leggings && !armorState.boots) {
             setArmorSlot('helmet', 'diamond_helmet');
             setArmorSlot('chestplate', 'diamond_chestplate');
@@ -1210,7 +1220,7 @@
         navigator.clipboard.writeText(cmdText).then(() => {
             const out = document.getElementById('output-command');
             const originalBg = out.style.backgroundColor;
-            out.style.backgroundColor = '#225522'; // Flash green
+            out.style.backgroundColor = '#225522'; 
             setTimeout(() => {
                 out.style.backgroundColor = originalBg;
             }, 250);
@@ -1229,7 +1239,6 @@
         const defaultDrops = document.getElementById('inp-defaultDrops').checked;
         tags.push(`defaultDrops:${defaultDrops}`);
         
-        // Handle Baby visual scaling
         const babyCheckbox = document.getElementById('inp-baby');
         const baseMobImg = document.querySelector('.preview-box img.base-mob');
         if (babyCheckbox && babyCheckbox.checked && ['chicken', 'sheep', 'rabbit', 'pig', 'wolf', 'cow', 'mooshroom', 'cowctus'].includes(selectedMob)) {
