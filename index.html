@@ -784,8 +784,13 @@
         const skinId = document.getElementById('inp-skin').value;
         if (skinId) {
             const imgEl = document.getElementById('mob-preview-img');
-            // La carpeta correcta en el servidor es "skins" en plural
-            imgEl.src = `https://mineblocks.com/1/skins/${skinId}.png`;
+            
+            // 1. Autorizamos la petición de origen cruzado
+            imgEl.crossOrigin = "Anonymous";
+            
+            // 2. Rompemos el caché agregando el timestamp exacto
+            imgEl.src = `https://mineblocks.com/1/skins/${skinId}.png?t=` + new Date().getTime();
+            
             imgEl.style.display = 'block';
         }
     }
