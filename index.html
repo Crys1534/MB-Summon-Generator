@@ -784,11 +784,12 @@
         const skinId = document.getElementById('inp-skin').value;
         if (skinId) {
             const imgEl = document.getElementById('mob-preview-img');
-            imgEl.src = `https://mineblocks.com/1/skin/${skinId}`;
+            // Usar la ruta correcta de la API para obtener el archivo .png puro
+            imgEl.src = `https://mineblocks.com/1/api/skin/${skinId}.png`;
             imgEl.style.display = 'block';
         }
     }
-
+	
     function switchTab(category, element) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         if(element) element.classList.add('active');
