@@ -37,6 +37,7 @@
         margin-left: auto;
         display: flex;
         gap: 8px;
+        min-height: 44px; /* Asegura que la barra siempre tenga espacio aunque esté vacía */
     }
     .hotbar-slot {
         width: 40px;
@@ -225,14 +226,31 @@
         position: relative; 
         width: 325px; 
         height: 377px; 
-        /* Editar este valor para hacer la miniatura más grande o chica: */
         transform: scale(0.33); 
         transform-origin: bottom center; 
         pointer-events: none; 
-        /* Editar este valor para subir o bajar el mob dentro de la tarjeta: */
         margin-bottom: -15px;  
     }
     
+    /* Tamaños específicos para la tarjeta de inventario separados de la preview principal */
+    .card-base-mob {
+        position: absolute;
+        z-index: 1;
+        image-rendering: pixelated;
+        pointer-events: none; 
+        width: 256px;       
+        height: 347px;      
+        bottom: 48px;       
+        left: 50%;
+        transform: translateX(-50%) scale(1);
+        transform-origin: bottom center;
+        transition: transform 0.2s; 
+    }
+    .card-layer-helmet { position: absolute; image-rendering: pixelated; pointer-events: none; left: 50%; transform: translateX(-50%); z-index: 5; width: 128px; height: 122px; bottom: 269px; }
+    .card-layer-chestplate { position: absolute; image-rendering: pixelated; pointer-events: none; left: 50%; transform: translateX(-50%); z-index: 4; width: 128px; height: 121px; bottom: 132px; }
+    .card-layer-leggings { position: absolute; image-rendering: pixelated; pointer-events: none; left: 50%; transform: translateX(-50%); z-index: 1; width: 100px; height: 90px; bottom: 68px; left: 49px; }
+    .card-layer-boots { position: absolute; image-rendering: pixelated; pointer-events: none; left: 50%; transform: translateX(-50%); z-index: 2; width: 128px; height: 110px; bottom: 4px; left: 49px; }
+
     /* Botón de guardado (ícono) */
     .card-save-btn {
         position: absolute;
@@ -566,12 +584,12 @@
             </div>
             <div class="input-group">
                 <label>Health:</label>
-                <input type="number" id="inp-health" placeholder="20" oninput="generateCommand()">
+                <input type="text" inputmode="numeric" id="inp-health" placeholder="20" oninput="this.value = this.value.replace(/[^0-9]/g, ''); generateCommand()">
             </div>
             <div class="input-group" id="group-skin" style="display: none;">
                 <label>Skin ID:</label>
                 <div style="display: flex; gap: 5px;">
-                    <input type="number" id="inp-skin" placeholder="1" min="1" oninput="generateCommand()" style="flex: 1;">
+                    <input type="text" inputmode="numeric" id="inp-skin" placeholder="1" oninput="this.value = this.value.replace(/[^0-9]/g, ''); generateCommand()" style="flex: 1;">
                     <button class="mc-btn" onclick="searchSkin()" style="padding: 4px 8px; font-size: 16px;">Load</button>
                 </div>
             </div>
@@ -673,9 +691,9 @@
                 </div>
             </div>
 
-            <div id="group-aggro" class="conditional-group" style="flex: 1; margin-bottom: 15px;">
-                <label>Aggro:</label>
-                <select id="inp-aggro" onchange="generateCommand()">
+            <div id="group-aggro" class="conditional-group" style="flex: 1; margin-bottom: 15px; display: flex; flex-direction: row; align-items: center; gap: 10px;">
+                <label style="margin: 0; white-space: nowrap;">Aggro:</label>
+                <select id="inp-aggro" onchange="generateCommand()" style="margin: 0; flex: 1;">
                     <option value="neutral">neutral</option>
                     <option value="hostile">hostile</option>
                     <option value="passive">passive</option>
@@ -856,7 +874,7 @@
     let communityCommands = []; 
     let activeSidebarMob = null;
 
-function init() {
+    function init() {
         loadFromStorage();
         switchTab('Overworld', document.querySelector('#inv-modal .tab:nth-child(2)'));
         updateVisibility();
@@ -864,14 +882,12 @@ function init() {
         generateCommand();
         updateHotbar();
         
-        // Listener global restaurado y mejorado
         document.addEventListener('click', function(event) {
             const dropdowns = document.querySelectorAll('.custom-dropdown');
             dropdowns.forEach(dd => {
                 if (!dd.contains(event.target)) dd.classList.remove('open');
             });
 
-            // Cierra cualquier modal al hacer clic en el fondo oscuro
             if (event.target.classList.contains('modal-overlay')) {
                 closeInventory();
                 closeItemInventory();
@@ -880,14 +896,13 @@ function init() {
         });
     }
 
-    // Funciones de cierre unificadas para evitar regresiones
     function closeInventory() { 
         document.getElementById('inv-modal').style.display = 'none'; 
     }
     
     function closeItemInventory() {
         document.getElementById('items-modal').style.display = 'none';
-        activeDropRow = null; // Esencial para no arrastrar items al drop equivocado
+        activeDropRow = null; 
     }
     
     function closeModals() { 
@@ -897,7 +912,11 @@ function init() {
 
     // Funciones de LocalStorage
     function saveToStorage() {
-        localStorage.setItem('mb_saved_commands', JSON.stringify(savedCommands));
+        try {
+            localStorage.setItem('mb_saved_commands', JSON.stringify(savedCommands));
+        } catch (error) {
+            console.error("Local storage error:", error);
+        }
     }
     function loadFromStorage() {
         const stored = localStorage.getItem('mb_saved_commands');
@@ -908,16 +927,10 @@ function init() {
     }
     
     function openInventory() { document.getElementById('inv-modal').style.display = 'flex'; }
-    function closeInventory() { document.getElementById('inv-modal').style.display = 'none'; }
     function openItemInventory(selectorElement) {
         activeDropRow = selectorElement.closest('.drop-row');
         document.getElementById('items-modal').style.display = 'flex';
     }
-    function closeItemInventory() {
-        document.getElementById('items-modal').style.display = 'none';
-        activeDropRow = null;
-    }
-    function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
     function openSaveModal() { document.getElementById('save-modal').style.display = 'flex'; }
     function openImportModal() { document.getElementById('import-modal').style.display = 'flex'; }
     function openMobInventoryModal() { 
@@ -1065,7 +1078,6 @@ function init() {
         const nameLabel = document.createElement('label');
         nameLabel.textContent = 'Name:';
         nameLabel.className = 'inline-label';
-        nameLabel.style.margin = '0 10px 0 20px';
         
         const nameInput = document.createElement('input');
         nameInput.type = 'text';
@@ -1092,12 +1104,15 @@ function init() {
         qtyLabel.className = 'inline-label';
         
         const qty = document.createElement('input');
-        qty.type = 'number';
+        qty.type = 'text';
+        qty.inputMode = 'numeric';
         qty.className = 'drop-qty';
         qty.value = 1;
-        qty.min = 1;
         qty.style.width = '60px';
-        qty.oninput = generateCommand;
+        qty.oninput = function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            generateCommand();
+        };
         
         const removeBtn = document.createElement('button');
         removeBtn.textContent = 'X';
@@ -1246,7 +1261,7 @@ function init() {
         show('group-holding', ['enderman', 'zombie_pigman'].includes(mob));
         show('group-armor', ['zombie', 'spawnskin'].includes(mob), 'flex');
         show('group-aggro', mob === 'spawnskin');
-        show('group-skin', mob === 'spawnskin', 'flex');
+        show('group-skin', mob === 'spawnskin'); 
         show('group-color', ['sheep', 'dog'].includes(mob));
         show('group-charged', mob === 'creeper', 'inline-flex');
         show('group-baby', ['chicken', 'sheep', 'rabbit', 'pig', 'wolf', 'cow', 'mooshroom', 'cowctus'].includes(mob), 'inline-flex');
@@ -1403,7 +1418,6 @@ function init() {
         const fullCmd = generateCommand();
         const dropIcons = Array.from(document.querySelectorAll('.drop-item-selector')).map(el => el.getAttribute('data-item-id')).filter(id => id);
 
-        // FIX: Revisa explícitamente si la checkbox de armadura está activa
         const isArmorEnabled = document.getElementById('inp-armor-enable').checked && ['zombie', 'spawnskin'].includes(selectedMob);
         const finalArmor = isArmorEnabled ? [armorState.helmet, armorState.chestplate, armorState.leggings, armorState.boots] : ["", "", "", ""];
 
@@ -1446,10 +1460,21 @@ function init() {
             slot.className = 'hotbar-slot';
             if (lastThree[i]) {
                 const img = document.createElement('img');
-                img.src = `${lastThree[i].mob}-icon.png`;
-                img.onerror = function() { this.src = `mobs/${lastThree[i].mob}.png`; };
+                
+                if (lastThree[i].mob === 'spawnskin' && lastThree[i].skinBase64) {
+                    img.src = lastThree[i].skinBase64;
+                } else {
+                    img.src = `${lastThree[i].mob}-icon.png`;
+                    img.onerror = function() { this.src = `mobs/${lastThree[i].mob}.png`; };
+                }
+                
                 img.title = lastThree[i].name;
                 slot.appendChild(img);
+                
+                slot.onclick = () => {
+                    document.getElementById('inp-import-cmd').value = lastThree[i].command;
+                    confirmImportCommand();
+                };
             }
             hotbar.appendChild(slot);
         }
@@ -1457,7 +1482,7 @@ function init() {
 
     function confirmImportCommand() {
         let cmd = document.getElementById('inp-import-cmd').value.trim();
-        cmd = cmd.replace(/[\u2800\u200B]/g, ''); // Limpiar caracteres invisibles extraños
+        cmd = cmd.replace(/[\u2800\u200B]/g, ''); 
         
         const mobMatch = cmd.match(/^\/?summon\s+([a-zA-Z0-9_]+)/i);
         if (!mobMatch) {
@@ -1582,10 +1607,13 @@ function init() {
         const list = tabName === 'Saved' ? savedCommands : communityCommands;
         
         list.forEach(item => {
+            if (tabName === 'Community') {
+                item.isSaved = savedCommands.some(savedItem => savedItem.id === item.id);
+            }
+
             const card = document.createElement('div');
             card.className = 'inv-card';
 
-            // Ícono de Guardado Real
             const saveIcon = document.createElement('img');
             saveIcon.className = 'card-save-btn';
             saveIcon.src = item.isSaved ? 'save.png' : 'save-hover.png';
@@ -1604,7 +1632,7 @@ function init() {
             scaler.className = 'card-preview-scaler';
             
             const baseImg = document.createElement('img');
-            baseImg.className = 'base-mob';
+            baseImg.className = 'card-base-mob';
             baseImg.style.imageRendering = 'pixelated';
             baseImg.src = item.skinBase64 || `mobs/${item.mob}.png`;
             baseImg.onerror = function() { this.src = `mobs/${item.mob}.png`; };
@@ -1616,10 +1644,10 @@ function init() {
             scaler.appendChild(baseImg);
 
             if (item.armor) {
-                if (item.armor[3]) scaler.insertAdjacentHTML('beforeend', `<img class="preview-overlay" style="z-index:2; width:128px; height:110px; bottom:-21px; left:158px;" src="armors/${item.armor[3]}.png">`);
-                if (item.armor[2]) scaler.insertAdjacentHTML('beforeend', `<img class="preview-overlay" style="z-index:1; width:100px; height:90px; bottom:42px; left:158px;" src="armors/${item.armor[2]}.png">`);
-                if (item.armor[1]) scaler.insertAdjacentHTML('beforeend', `<img class="preview-overlay" style="z-index:4; width:128px; height:121px; bottom:106px;" src="armors/${item.armor[1]}.png">`);
-                if (item.armor[0]) scaler.insertAdjacentHTML('beforeend', `<img class="preview-overlay" style="z-index:5; width:128px; height:122px; bottom:243px;" src="armors/${item.armor[0]}.png">`);
+                if (item.armor[3]) scaler.insertAdjacentHTML('beforeend', `<img class="card-layer-boots" src="armors/${item.armor[3]}.png">`);
+                if (item.armor[2]) scaler.insertAdjacentHTML('beforeend', `<img class="card-layer-leggings" src="armors/${item.armor[2]}.png">`);
+                if (item.armor[1]) scaler.insertAdjacentHTML('beforeend', `<img class="card-layer-chestplate" src="armors/${item.armor[1]}.png">`);
+                if (item.armor[0]) scaler.insertAdjacentHTML('beforeend', `<img class="card-layer-helmet" src="armors/${item.armor[0]}.png">`);
             }
 
             previewWrapper.appendChild(scaler);
@@ -1707,6 +1735,7 @@ function init() {
         confirmImportCommand();
     }
 
+    window.onload = init;
 </script>
 
 </body>
