@@ -182,15 +182,15 @@
         box-sizing: border-box;
     }
     
-    .preview-box img.base-mob {
+    img.base-mob {
         position: absolute;
         z-index: 1;
         image-rendering: pixelated;
         pointer-events: none; 
         
-        width: 145px;       
-        height: 200px;      
-        bottom: 20px;       
+        width: 256px;       
+        height: 347px;      
+        bottom: 48px;       
         
         left: 50%;
         transform: translateX(-50%) scale(1);
@@ -206,10 +206,45 @@
         transform: translateX(-50%);
     }
     
-    #preview-layer-helmet { z-index: 5; width: 128px; height: 122px; bottom: 243px; }
-    #preview-layer-chestplate { z-index: 4; width: 128px; height: 121px; bottom: 106px; }
-    #preview-layer-leggings { z-index: 1; width: 100px; height: 90px; bottom: 42px; left: 158px; }
-    #preview-layer-boots { z-index: 2; width: 128px; height: 110px; bottom: -21px; left: 158px; }
+    #preview-layer-helmet { z-index: 5; width: 128px; height: 122px; bottom: 269px; }
+    #preview-layer-chestplate { z-index: 4; width: 128px; height: 121px; bottom: 132px; }
+    #preview-layer-leggings { z-index: 1; width: 100px; height: 90px; bottom: 68px; left: 49px; }
+    #preview-layer-boots { z-index: 2; width: 128px; height: 110px; bottom: 4px; left: 49px; }
+
+    /* CONTROLES PARA LA MINIATURA DE LA TARJETA (INVENTORY CARD) */
+    .card-preview-wrapper {
+        width: 100px; 
+        height: 124px; 
+        position: relative; 
+        overflow: hidden; 
+        display: flex; 
+        justify-content: center; 
+        align-items: flex-end;
+    }
+    .card-preview-scaler {
+        position: relative; 
+        width: 325px; 
+        height: 377px; 
+        /* Editar este valor para hacer la miniatura más grande o chica: */
+        transform: scale(0.33); 
+        transform-origin: bottom center; 
+        pointer-events: none; 
+        /* Editar este valor para subir o bajar el mob dentro de la tarjeta: */
+        margin-bottom: -15px;  
+    }
+    
+    /* Botón de guardado (ícono) */
+    .card-save-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 24px;
+        height: 24px;
+        z-index: 20;
+        image-rendering: pixelated;
+        cursor: pointer;
+        transition: opacity 0.1s;
+    }
 
     .modal-overlay {
         position: fixed;
@@ -272,17 +307,16 @@
         padding: 12px 6px;
         cursor: pointer;
         transition: transform 0.1s, border-color 0.1s, background-color 0.1s;
-        position: relative; /* Agregado para posicionar el corazón */
+        position: relative;
     }
     .inv-card:hover {
         background-color: #444444;
         border-color: #aaaaaa #111111 #111111 #aaaaaa;
         transform: translateY(-3px);
     }
-    /* Se agregó ">" para que solo afecte a imágenes directas y no a nuestra preview anidada */
     .inv-card > img {
-        width: 77px;
-        height: 124px;
+        width: 32px;
+        height: 32px;
         object-fit: contain;
         image-rendering: pixelated;
         margin-bottom: 10px;
@@ -296,7 +330,6 @@
         line-height: 0.5;
         margin-top: 10px;
     }
-    
 
     .items-grid {
         display: grid;
@@ -762,7 +795,7 @@
                 <div class="inventory-grid mc-ui-inset" id="mob-inventory-grid" style="flex-grow: 1;"></div>
             </div>
             
-            <!-- Right Pane Sidebar -->
+            <!-- Right Pane Sidebar (Sin Preview, Solo Datos) -->
             <div class="inventory-right mc-ui-inset" style="padding-top: 15px;">
                 <h3 id="sidebar-title" style="border-bottom: 2px solid #555; padding-bottom: 5px; margin-top: 0;">No Selection</h3>
                 
@@ -818,25 +851,60 @@
     let activeDropRow = null;
     let dropRowCounter = 0;
 
-    // Database arrays
+    // Persistencia y Bases de datos
     let savedCommands = [];
-    let communityCommands = []; // Espacio para agregar manuales
+    let communityCommands = []; 
     let activeSidebarMob = null;
 
-    function init() {
+function init() {
+        loadFromStorage();
         switchTab('Overworld', document.querySelector('#inv-modal .tab:nth-child(2)'));
         updateVisibility();
         switchItemTab('Blocks', document.querySelector('#item-tabs .tab'));
         generateCommand();
         updateHotbar();
         
+        // Listener global restaurado y mejorado
         document.addEventListener('click', function(event) {
             const dropdowns = document.querySelectorAll('.custom-dropdown');
             dropdowns.forEach(dd => {
                 if (!dd.contains(event.target)) dd.classList.remove('open');
             });
-            if (event.target.classList.contains('modal-overlay')) closeModals();
+
+            // Cierra cualquier modal al hacer clic en el fondo oscuro
+            if (event.target.classList.contains('modal-overlay')) {
+                closeInventory();
+                closeItemInventory();
+                closeModals();
+            }
         });
+    }
+
+    // Funciones de cierre unificadas para evitar regresiones
+    function closeInventory() { 
+        document.getElementById('inv-modal').style.display = 'none'; 
+    }
+    
+    function closeItemInventory() {
+        document.getElementById('items-modal').style.display = 'none';
+        activeDropRow = null; // Esencial para no arrastrar items al drop equivocado
+    }
+    
+    function closeModals() { 
+        document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+        activeDropRow = null; 
+    }
+
+    // Funciones de LocalStorage
+    function saveToStorage() {
+        localStorage.setItem('mb_saved_commands', JSON.stringify(savedCommands));
+    }
+    function loadFromStorage() {
+        const stored = localStorage.getItem('mb_saved_commands');
+        if (stored) {
+            try { savedCommands = JSON.parse(stored); } 
+            catch(e) { console.error("Error loading saves"); }
+        }
     }
     
     function openInventory() { document.getElementById('inv-modal').style.display = 'flex'; }
@@ -1335,6 +1403,10 @@
         const fullCmd = generateCommand();
         const dropIcons = Array.from(document.querySelectorAll('.drop-item-selector')).map(el => el.getAttribute('data-item-id')).filter(id => id);
 
+        // FIX: Revisa explícitamente si la checkbox de armadura está activa
+        const isArmorEnabled = document.getElementById('inp-armor-enable').checked && ['zombie', 'spawnskin'].includes(selectedMob);
+        const finalArmor = isArmorEnabled ? [armorState.helmet, armorState.chestplate, armorState.leggings, armorState.boots] : ["", "", "", ""];
+
         const savedObj = {
             id: Date.now(),
             name: cmdName,
@@ -1344,7 +1416,7 @@
             drops: dropIcons,
             skinId: document.getElementById('inp-skin').value,
             skinBase64: selectedMob === 'spawnskin' && document.getElementById('inp-skin').value ? document.getElementById('mob-preview-img').src : null,
-            armor: [armorState.helmet, armorState.chestplate, armorState.leggings, armorState.boots],
+            armor: finalArmor,
             tags: {
                 Name: document.getElementById('inp-name').value.trim(),
                 Health: document.getElementById('inp-health').value,
@@ -1359,6 +1431,7 @@
         };
 
         savedCommands.push(savedObj);
+        saveToStorage();
         updateHotbar();
         closeModals();
         document.getElementById('inp-save-name').value = '';
@@ -1383,19 +1456,17 @@
     }
 
     function confirmImportCommand() {
-        // Obtenemos el comando y limpiamos caracteres invisibles raros (como el U+2800)
         let cmd = document.getElementById('inp-import-cmd').value.trim();
-        cmd = cmd.replace(/[\u2800\u200B]/g, '');
+        cmd = cmd.replace(/[\u2800\u200B]/g, ''); // Limpiar caracteres invisibles extraños
         
         const mobMatch = cmd.match(/^\/?summon\s+([a-zA-Z0-9_]+)/i);
-        
         if (!mobMatch) {
             alert("Comando inválido. Debe empezar con /summon [mob] o summon [mob]");
             return;
         }
 
         document.getElementById('drops-container').innerHTML = '';
-        dropRowCounter = 0; // Reiniciamos el contador de drops por si acaso
+        dropRowCounter = 0;
         selectMob(mobMatch[1]);
         
         const extractStr = (key) => { const m = cmd.match(new RegExp(`${key}:"([^"]+)"`)); return m ? m[1] : ''; };
@@ -1421,7 +1492,6 @@
         document.getElementById('inp-baby').checked = extractBool('baby');
         document.getElementById('inp-sheared').checked = extractBool('sheared');
 
-        // Utilizamos [\s\S] para que pueda leer a través de saltos de línea
         const armorMatch = cmd.match(/armor:\[([\s\S]+?)\]/);
         if (armorMatch) {
             document.getElementById('inp-armor-enable').checked = true;
@@ -1436,8 +1506,6 @@
             toggleArmorInterface();
         }
 
-        // --- ESCÁNER DE DROPS MULTILÍNEA ---
-        // [\s\S]* garantiza que el Regex no se detenga si hay "Enters" en el texto
         const dropsMatch = cmd.match(/drops:\[([\s\S]*)\]/);
         if (dropsMatch) {
             const dropsString = dropsMatch[1];
@@ -1452,7 +1520,7 @@
                     const unbreakMatch = part.match(/unbreakable:true/);
                     const enchantsMatch = part.match(/enchantments:\[(.*?)\]/);
                     
-                    addDrop(); // Crea la fila en la interfaz
+                    addDrop();
                     const currentRow = document.getElementById('drop-row-' + dropRowCounter);
                     
                     const selector = currentRow.querySelector('.drop-item-selector');
@@ -1516,25 +1584,28 @@
         list.forEach(item => {
             const card = document.createElement('div');
             card.className = 'inv-card';
-            
-            // Emoji de Corazón posicionado absolutamente en la esquina de la tarjeta
-            const heart = document.createElement('span');
-            heart.textContent = item.isSaved ? '❤️' : '🤍';
-            heart.style.cssText = 'position:absolute; top:5px; right:5px; font-size:20px; z-index:20;';
-            heart.onclick = (e) => {
-                e.stopPropagation(); // Evita que al dar clic al corazón se abra la info de la sidebar
+
+            // Ícono de Guardado Real
+            const saveIcon = document.createElement('img');
+            saveIcon.className = 'card-save-btn';
+            saveIcon.src = item.isSaved ? 'save.png' : 'save-hover.png';
+            saveIcon.style.opacity = item.isSaved ? '1' : '0.3';
+            saveIcon.onmouseenter = () => { if (!item.isSaved) saveIcon.style.opacity = '1'; };
+            saveIcon.onmouseleave = () => { if (!item.isSaved) saveIcon.style.opacity = '0.3'; };
+            saveIcon.onclick = (e) => {
+                e.stopPropagation();
                 toggleHeartItem(item);
             };
 
-            // Contenedor en miniatura de la skin y la armadura
             const previewWrapper = document.createElement('div');
-            previewWrapper.style.cssText = 'width: 100px; height: 124px; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: flex-end;';
+            previewWrapper.className = 'card-preview-wrapper';
             
             const scaler = document.createElement('div');
-            scaler.style.cssText = 'position: relative; width: 325px; height: 377px; transform: scale(0.33); transform-origin: bottom center; pointer-events: none; margin-bottom: -15px;';
+            scaler.className = 'card-preview-scaler';
             
             const baseImg = document.createElement('img');
             baseImg.className = 'base-mob';
+            baseImg.style.imageRendering = 'pixelated';
             baseImg.src = item.skinBase64 || `mobs/${item.mob}.png`;
             baseImg.onerror = function() { this.src = `mobs/${item.mob}.png`; };
             if (item.tags && item.tags.Baby) {
@@ -1544,7 +1615,6 @@
             }
             scaler.appendChild(baseImg);
 
-            // Capas de Armadura en la tarjeta
             if (item.armor) {
                 if (item.armor[3]) scaler.insertAdjacentHTML('beforeend', `<img class="preview-overlay" style="z-index:2; width:128px; height:110px; bottom:-21px; left:158px;" src="armors/${item.armor[3]}.png">`);
                 if (item.armor[2]) scaler.insertAdjacentHTML('beforeend', `<img class="preview-overlay" style="z-index:1; width:100px; height:90px; bottom:42px; left:158px;" src="armors/${item.armor[2]}.png">`);
@@ -1558,16 +1628,32 @@
             nameLabel.className = 'inv-card-name';
             nameLabel.textContent = item.name;
 
-            card.append(heart, previewWrapper, nameLabel);
+            card.append(saveIcon, previewWrapper, nameLabel);
             card.onclick = () => renderSidebar(item);
             grid.appendChild(card);
         });
     }
 
+    function toggleHeartItem(item) {
+        item.isSaved = !item.isSaved;
+        
+        if (item.isSaved) {
+            if (!savedCommands.find(c => c.id === item.id)) {
+                savedCommands.push(item);
+            }
+        } else {
+            savedCommands = savedCommands.filter(c => c.id !== item.id);
+        }
+        
+        saveToStorage();
+        updateHotbar();
+        const activeTab = document.querySelector('.inventory-left .tab.active');
+        switchInventoryTab(activeTab.textContent, activeTab);
+    }
+
     function renderSidebar(item) {
         activeSidebarMob = item;
 
-        // Cargar Data Tags en Sidebar Info
         let tagsHtml = ``;
         if (item.tags) {
             for (const [key, val] of Object.entries(item.tags)) {
@@ -1576,14 +1662,11 @@
                 }
             }
         }
-        if (item.skinId) {
-            tagsHtml += `<strong>Skin ID:</strong> ${item.skinId}<br>`;
-        }
+        if (item.skinId) tagsHtml += `<strong>Skin ID:</strong> ${item.skinId}<br>`;
 
         document.getElementById('sidebar-title').textContent = item.name;
         document.getElementById('sidebar-info').innerHTML = tagsHtml;
         
-        // Cargar Armadura en Slots
         const armorGrid = document.getElementById('sidebar-armor-grid');
         armorGrid.innerHTML = '';
         ['helmet', 'chestplate', 'leggings', 'boots'].forEach((part, index) => {
@@ -1598,7 +1681,6 @@
             armorGrid.appendChild(slot);
         });
 
-        // Cargar Drops en Slots
         const dropsGrid = document.getElementById('sidebar-drops-grid');
         dropsGrid.innerHTML = '';
         const totalDrops = (item.drops && item.drops.length > 0) ? item.drops.length : 0;
@@ -1619,30 +1701,12 @@
         document.getElementById('sidebar-load-btn').disabled = false;
     }
 
-    // Nuevo sistema de guardado de corazones atado directamente a cada tarjeta
-    function toggleHeartItem(item) {
-        item.isSaved = !item.isSaved;
-        
-        if (item.isSaved) {
-            if (!savedCommands.find(c => c.id === item.id)) {
-                savedCommands.push(item);
-            }
-        } else {
-            savedCommands = savedCommands.filter(c => c.id !== item.id);
-        }
-        
-        updateHotbar();
-        const activeTab = document.querySelector('.inventory-left .tab.active');
-        switchInventoryTab(activeTab.textContent, activeTab);
-    }
-
     function loadSidebarCommand() {
         if (!activeSidebarMob) return;
         document.getElementById('inp-import-cmd').value = activeSidebarMob.command;
         confirmImportCommand();
     }
 
-    window.onload = init;
 </script>
 
 </body>
