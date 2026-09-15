@@ -14,9 +14,9 @@
         background-color: #1e1e1e;
         color: #ffffff;
         font-family: 'Rainy Hearts', monospace, sans-serif;
-        font-size: 18px;
+        font-size: 22px;
         margin: 0;
-        line-height: 1.4;
+        line-height: 1.2;
     }
 
     /* Top Bar */
@@ -25,23 +25,26 @@
         border-bottom: 4px solid #111111;
         display: flex;
         align-items: center;
-        padding: 8px 16px;
-        gap: 15px;
+        padding: 2px 16px;
+    }
+	.top-bar .mc-btn {
+        border-radius: 5px;
     }
     .top-bar .favicon {
-        width: 24px;
-        height: 24px;
+        width: 32px;
+        height: 32px;
         image-rendering: pixelated;
+		margin-right: 10px;
     }
     .top-hotbar {
         margin-left: auto;
         display: flex;
-        gap: 8px;
+		align-items: center;
         min-height: 44px; /* Asegura que la barra siempre tenga espacio aunque esté vacía */
     }
     .hotbar-slot {
-        width: 40px;
-        height: 40px;
+        width: 34px;
+        height: 34px;
         background-color: #333333;
         border: 2px solid #5a5a5a;
         display: flex;
@@ -68,15 +71,15 @@
 
     .mc-btn {
         background-color: #404040;
-        border: 4px solid;
+        border: 1px solid;
         border-color: #7a7a7a #111111 #111111 #7a7a7a;
         color: #ffffff;
-        padding: 8px 16px;
+        padding: 6px 8px;
         font-family: 'Rainy Hearts', sans-serif;
         font-size: 18px;
         cursor: pointer;
         text-transform: uppercase;
-        text-shadow: 2px 2px 0 #111111;
+        text-shadow: 1px 1px 0 #111111;
         transition: transform 0.05s, border-color 0.05s, background-color 0.1s; 
     }
 
@@ -161,12 +164,8 @@
     }
     .checkboxes-row {
         align-items: center;
-        margin-top: -5px;
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #111;
         flex-wrap: wrap;
-    }
+}
 
     .preview-box {
         width: 325px;
@@ -191,7 +190,7 @@
         
         width: 256px;       
         height: 347px;      
-        bottom: 48px;       
+        bottom: 0px;       
         
         left: 50%;
         transform: translateX(-50%) scale(1);
@@ -207,10 +206,10 @@
         transform: translateX(-50%);
     }
     
-    #preview-layer-helmet { z-index: 5; width: 128px; height: 122px; bottom: 269px; }
-    #preview-layer-chestplate { z-index: 4; width: 128px; height: 121px; bottom: 132px; }
-    #preview-layer-leggings { z-index: 1; width: 100px; height: 90px; bottom: 68px; left: 49px; }
-    #preview-layer-boots { z-index: 2; width: 128px; height: 110px; bottom: 4px; left: 49px; }
+    #preview-layer-helmet { z-index: 1; width: 128px; height: 128px; bottom: 220px; }
+    #preview-layer-chestplate { z-index: 1; width: 128px; height: 126px; bottom: 79px; }
+    #preview-layer-leggings { z-index: 2; width: 96px; height: 88px; bottom: 24px; left: 158px; }
+    #preview-layer-boots { z-index: 3; width: 128px; height: 110px; bottom: -41px; left: 158px; }
 
     /* CONTROLES PARA LA MINIATURA DE LA TARJETA (INVENTORY CARD) */
     .card-preview-wrapper {
@@ -246,10 +245,10 @@
         transform-origin: bottom center;
         transition: transform 0.2s; 
     }
-    .card-layer-helmet { position: absolute; image-rendering: pixelated; pointer-events: none; left: 50%; transform: translateX(-50%); z-index: 5; width: 128px; height: 122px; bottom: 269px; }
-    .card-layer-chestplate { position: absolute; image-rendering: pixelated; pointer-events: none; left: 50%; transform: translateX(-50%); z-index: 4; width: 128px; height: 121px; bottom: 132px; }
-    .card-layer-leggings { position: absolute; image-rendering: pixelated; pointer-events: none; left: 50%; transform: translateX(-50%); z-index: 1; width: 100px; height: 90px; bottom: 68px; left: 49px; }
-    .card-layer-boots { position: absolute; image-rendering: pixelated; pointer-events: none; left: 50%; transform: translateX(-50%); z-index: 2; width: 128px; height: 110px; bottom: 4px; left: 49px; }
+    .card-layer-helmet { position: absolute; image-rendering: pixelated; pointer-events: none; left: 50%; transform: translateX(-50%); z-index: 1; width: 128px; height: 122px; bottom: 269px; }
+    .card-layer-chestplate { position: absolute; image-rendering: pixelated; pointer-events: none; left: 50%; transform: translateX(-50%); z-index: 2; width: 128px; height: 121px; bottom: 131px; }
+    .card-layer-leggings { position: absolute; image-rendering: pixelated; pointer-events: none; left: 50%; transform: translateX(-50%); z-index: 3; width: 100px; height: 90px; bottom: 68px; left: 49px; }
+    .card-layer-boots { position: absolute; image-rendering: pixelated; pointer-events: none; left: 50%; transform: translateX(-50%); z-index: 4; width: 128px; height: 110px; bottom: 4px; left: 49px; }
 
     /* Botón de guardado (ícono) */
     .card-save-btn {
@@ -307,7 +306,7 @@
     
     .inventory-grid {
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: 0;
         flex-grow: 1;
         align-content: start;
@@ -333,7 +332,7 @@
         transform: translateY(-3px);
     }
     .inv-card > img {
-        width: 32px;
+        width: 35px;
         height: 32px;
         object-fit: contain;
         image-rendering: pixelated;
@@ -411,8 +410,8 @@
     }
 
     .drop-item-selector {
-        width: 48px;
-        height: 48px;
+        width: 34px;
+        height: 34px;
         background-color: #333333;
         border: 2px solid;
         border-color: #5a5a5a #111111 #111111 #5a5a5a;
@@ -427,11 +426,12 @@
     .drop-item-selector img { width: 32px; height: 32px; image-rendering: pixelated; }
     .drop-row input { margin: 0; flex: 1; }
     .drop-row button { margin: 0; padding: 6px 12px; }
+	.drop-row .inline-label { font-size: 18px; }
     
     .conditional-group { 
         display: none; 
         margin-bottom: 15px; 
-        padding: 15px; 
+        padding: 8px; 
         background-color: #1e1e1e;
         border: 2px solid #111111;
     }
@@ -453,7 +453,8 @@
         user-select: none;
     }
     .dropdown-trigger {
-        width: 90%;
+        width: 100%;
+		box-sizing: border-box;
         height: 100%;
         display: flex;
         justify-content: center;
@@ -509,7 +510,7 @@
     }
     .inventory-right {
         flex: 1;
-        padding-left: 15px;
+        padding: 16px;
         display: flex;
         flex-direction: column;
         background: #1e1e1e;
@@ -519,7 +520,6 @@
     .sidebar-drops-grid {
         display: grid;
         grid-template-columns: repeat(9, 1fr);
-        gap: 2px;
         margin-top: 5px;
     }
     .sidebar-armor-grid {
@@ -548,7 +548,7 @@
 <body>
 
 <div class="top-bar">
-    <img src="/favicon.ico" class="favicon" onerror="this.style.display='none'" alt="Favicon">
+    <img src="favicon.ico" class="favicon" onerror="this.style.display='none'" alt="Favicon">
     <button class="mc-btn" style="padding: 4px 10px;" onclick="openSaveModal()">Save</button>
     <button class="mc-btn" style="padding: 4px 10px;" onclick="openImportModal()">Import command</button>
     <button class="mc-btn" style="padding: 4px 10px;" onclick="openMobInventoryModal()">Mob Inventory</button>
@@ -561,7 +561,6 @@
 <div class="main-container">
     <!-- Left Column: Mob Target -->
     <div class="left-col mc-ui">
-        <h2>Mob Target</h2>
         <div class="preview-box mc-ui-inset">
             <img id="mob-preview-img" class="base-mob" src="mobs/zombie.png" alt="Preview" onerror="this.style.display='none'">
             <img id="preview-layer-boots" class="preview-overlay" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" style="display:none;" alt="">
@@ -588,7 +587,7 @@
             </div>
             <div class="input-group" id="group-skin" style="display: none;">
                 <label>Skin ID:</label>
-                <div style="display: flex; gap: 5px;">
+                <div style="display: flex;">
                     <input type="text" inputmode="numeric" id="inp-skin" placeholder="1" oninput="this.value = this.value.replace(/[^0-9]/g, ''); generateCommand()" style="flex: 1;">
                     <button class="mc-btn" onclick="searchSkin()" style="padding: 4px 8px; font-size: 16px;">Load</button>
                 </div>
@@ -691,8 +690,8 @@
                 </div>
             </div>
 
-            <div id="group-aggro" class="conditional-group" style="flex: 1; margin-bottom: 15px; display: flex; flex-direction: row; align-items: center; gap: 10px;">
-                <label style="margin: 0; white-space: nowrap;">Aggro:</label>
+            <div id="group-aggro" class="conditional-group" style="flex: 1; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                <label style="margin: 0; white-space: nowrap; font-size: 18px;">Aggro:</label>
                 <select id="inp-aggro" onchange="generateCommand()" style="margin: 0; flex: 1;">
                     <option value="neutral">neutral</option>
                     <option value="hostile">hostile</option>
@@ -814,11 +813,11 @@
             </div>
             
             <!-- Right Pane Sidebar (Sin Preview, Solo Datos) -->
-            <div class="inventory-right mc-ui-inset" style="padding-top: 15px;">
+            <div class="inventory-right mc-ui-inset">
                 <h3 id="sidebar-title" style="border-bottom: 2px solid #555; padding-bottom: 5px; margin-top: 0;">No Selection</h3>
                 
                 <!-- Data Tags List -->
-                <div id="sidebar-info" style="font-size: 16px; margin-bottom: 15px;">
+                <div id="sidebar-info" style="font-size: 20px; margin-bottom: 15px;">
                     Select a mob to view details.
                 </div>
                 
@@ -1260,13 +1259,27 @@
 
         show('group-holding', ['enderman', 'zombie_pigman'].includes(mob));
         show('group-armor', ['zombie', 'spawnskin'].includes(mob), 'flex');
-        show('group-aggro', mob === 'spawnskin');
+        show('group-aggro', mob === 'spawnskin', 'flex');
         show('group-skin', mob === 'spawnskin'); 
         show('group-color', ['sheep', 'dog'].includes(mob));
         show('group-charged', mob === 'creeper', 'inline-flex');
         show('group-baby', ['chicken', 'sheep', 'rabbit', 'pig', 'wolf', 'cow', 'mooshroom', 'cowctus'].includes(mob), 'inline-flex');
         show('group-sheared', mob === 'sheep', 'inline-flex');
         show('group-defaultDrops', mob !== 'spawnskin', 'inline-flex');
+
+        // --- Ajuste Anti-Deformación para Mob Target ---
+        const baseMobImg = document.querySelector('.preview-box img.base-mob');
+        if (['zombie', 'spawnskin'].includes(mob)) {
+            // Mantiene las proporciones exactas para que la armadura encaje
+            baseMobImg.style.width = '256px';
+            baseMobImg.style.height = '347px';
+            baseMobImg.style.objectFit = 'fill';
+        } else {
+            // Adapta cualquier otro mob a la caja sin aplastarlo ni estirarlo
+            baseMobImg.style.width = '90%';
+            baseMobImg.style.height = '260px';
+            baseMobImg.style.objectFit = 'contain';
+        }
     }
 
     function setArmorSlot(slotType, value) {
@@ -1454,25 +1467,31 @@
     function updateHotbar() {
         const hotbar = document.getElementById('top-hotbar');
         hotbar.innerHTML = '';
-        const lastThree = savedCommands.slice(-3).reverse();
-        for(let i=0; i<3; i++) {
+        
+        // Tomamos los últimos 9 guardados, ordenados del más reciente al más antiguo
+        const lastNine = savedCommands.slice(-9).reverse();
+        
+        // El bucle ahora se repite 9 veces siempre, para mantener fijos los 9 slots
+        for(let i = 0; i < 9; i++) {
             const slot = document.createElement('div');
             slot.className = 'hotbar-slot';
-            if (lastThree[i]) {
+            
+            // Si existe un mob guardado para esta posición, le ponemos su imagen
+            if (lastNine[i]) {
                 const img = document.createElement('img');
                 
-                if (lastThree[i].mob === 'spawnskin' && lastThree[i].skinBase64) {
-                    img.src = lastThree[i].skinBase64;
+                if (lastNine[i].mob === 'spawnskin' && lastNine[i].skinBase64) {
+                    img.src = lastNine[i].skinBase64;
                 } else {
-                    img.src = `${lastThree[i].mob}-icon.png`;
-                    img.onerror = function() { this.src = `mobs/${lastThree[i].mob}.png`; };
+                    img.src = `${lastNine[i].mob}-icon.png`;
+                    img.onerror = function() { this.src = `mobs/${lastNine[i].mob}.png`; };
                 }
                 
-                img.title = lastThree[i].name;
+                img.title = lastNine[i].name;
                 slot.appendChild(img);
                 
                 slot.onclick = () => {
-                    document.getElementById('inp-import-cmd').value = lastThree[i].command;
+                    document.getElementById('inp-import-cmd').value = lastNine[i].command;
                     confirmImportCommand();
                 };
             }
