@@ -755,6 +755,7 @@
         <h2 style="margin-right: 40px;">Select Item</h2>
         
         <div class="tabs" id="item-tabs">
+            <div class="tab" onclick="switchItemTab('All', this)">All</div> <!-- AÑADE ESTA LÍNEA AQUÍ -->
             <div class="tab active" onclick="switchItemTab('Blocks', this)">Blocks</div>
             <div class="tab" onclick="switchItemTab('Decorations', this)">Decorations</div>
             <div class="tab" onclick="switchItemTab('Tools', this)">Tools</div>
@@ -849,16 +850,67 @@
         End: ['enderman', 'ender_dragon']
     };
 
-    const itemsData = {
-        "Blocks": ["stone", "cobblestone", "stone_brick", "moss_stone", "obsidian", "bedrock", "dirt", "grass", "coarse_dirt", "farmland", "mycelium", "gold_soil", "wood", "tree_wood", "wooden_planks", "barrier", "coal_ore", "iron_ore", "gold_ore", "diamond_ore", "redstone_ore", "odd_rock_ore", "lapis_ore", "topaz_ore", "iron_block", "gold_block", "diamond_ore", "lapis_lazuli_block", "coal_ore", "sand", "sandstone", "clay_block", "brick", "bricks", "snow_block", "ice", "frosted_ice", "gravel", "bookshelf", "stairs_cobblestone", "stairs_stone", "stairs_nether_brick", "stairs_brick"],
-        "Decorations": ["crafting_table", "furnace", "chest", "ender_chest", "composter", "enchantment_table", "anvil", "name_tag", "bed", "wooden_door", "iron_door", "bamboo_door", "trap_door", "sign", "sapling", "leaves"],
-        "Tools": ["wooden_pickaxe", "wooden_shovel", "wooden_axe", "wooden_hoe", "wooden_sword", "", "", "", "", "stone_pickaxe", "stone_shovel", "stone_axe", "stone_hoe", "stone_sword", "", "", "", "", "iron_pickaxe", "iron_shovel", "iron_axe", "iron_hoe", "iron_sword", "", "", "", "", "golden_pickaxe", "golden_shovel", "golden_axe", "golden_hoe", "golden_sword", "", "", "", "", "diamond_pickaxe", "diamond_shovel", "diamond_axe", "diamond_hoe", "diamond_sword", "", "", "", ""],
-        "Armor": ["leather_cap", "iron_helmet", "gold_helmet", "diamond_helmet", "dragon_scale_helmet", "", "", "", "", "leather_tunic", "iron_chestplate", "gold_chestplate", "diamond_chestplate", "dragon_scale_chestplate", "", "", "", "", "leather_pants", "iron_leggings", "gold_leggings", "diamond_leggings", "dragon_scale_leggings", "", "", "", "", "leather_boots", "iron_boots", "gold_boots", "diamond_boots", "dragon_scale_boots", "", "", "", ""],
-        "Food": ["apple", "bread"],
-        "Redstone": ["redstone", "piston"],
-        "Transportation": ["minecart", "rail"],
-        "Brewing": ["brewing_stand", "potion"],
-        "Miscellaneous": ["diamond", "stick"]
+const itemsData = {
+        "Blocks": [
+            "stone", "cobblestone", "moss_stone", "stone_brick", "obsidian", "bedrock",
+            "coal_ore", "iron_ore", "gold_ore", "diamond_ore", "redstone_ore", "lapis_ore", "odd_rock_ore", "ender_gem_ore", "topaz_ore",
+            "coal_block", "iron_block", "gold_block", "diamond_block", "lapis_lazuli_block", "bone_block", "dragon_scale_block", "topaz_block",
+            "dirt", "grass", "coarse_dirt", "farmland", "mycelium", "gold_soil",
+            "sand", "sandstone", "clay_block", "gravel",
+            "wood", "tree_wood", "wooden_planks", "bamboo_block", "leaves", "cactus",
+            "brown_mushroom_block", "red_mushroom_block", "nether_wart_block",
+            "brick", "bricks", "glass", "snow_block", "ice", "frosted_ice",
+            "bookshelf", "glow_stone", "netherrack", "soul_sand", "enderstone", "slime_block", "magma_block",
+            "backdrop_dirt", "backdrop_stone", "backdrop_cobblestone", "backdrop_wood", "backdrop_wooden_planks", 
+            "backdrop_glass", "backdrop_brick", "backdrop_obsidian", "backdrop_nether_brick", 
+            "backdrop_bookshelf", "backdrop_bamboo", "backdrop_stone_brick", "backdrop_wool",
+            "stairs_wooden_planks", "stairs_cobblestone", "stairs_stone", "stairs_brick", 
+            "stairs_stone_brick", "stairs_nether_brick", "stairs_iron", "stairs_gold", 
+            "stairs_diamond", "stairs_obsidian", "stairs_bedrock", "stair_bamboo",
+            "", "", "", "", "",
+            "slab_wooden_planks", "slab_cobblestone", "slab_stone", "slab_brick", 
+            "slab_stone_brick", "slab_nether_brick", "slab_iron", "slab_gold", 
+            "slab_diamond", "slab_obsidian", "slab_bedrock", "slab_bamboo",
+        ],
+        "Decorations": [
+            "crafting_table", "furnace", "chest", "ender_chest", "composter", "enchantment_table", "anvil", 
+            "name_tag", "bed", "wooden_door", "iron_door", "bamboo_door", "trap_door", "sign", "sapling", "leaves"
+        ],
+        "Tools": [
+            "wooden_pickaxe", "wooden_shovel", "wooden_axe", "wooden_hoe", "wooden_sword", "", "", "", "", 
+            "stone_pickaxe", "stone_shovel", "stone_axe", "stone_hoe", "stone_sword", "", "", "", "", 
+            "iron_pickaxe", "iron_shovel", "iron_axe", "iron_hoe", "iron_sword", "", "", "", "", 
+            "golden_pickaxe", "golden_shovel", "golden_axe", "golden_hoe", "golden_sword", "", "", "", "", 
+            "diamond_pickaxe", "diamond_shovel", "diamond_axe", "diamond_hoe", "diamond_sword", "", "", "", ""
+        ],
+        "Armor": [
+            "leather_cap", "iron_helmet", "gold_helmet", "diamond_helmet", "dragon_scale_helmet", "", "", "", "", 
+            "leather_tunic", "iron_chestplate", "gold_chestplate", "diamond_chestplate", "dragon_scale_chestplate", "", "", "", "", 
+            "leather_pants", "iron_leggings", "gold_leggings", "diamond_leggings", "dragon_scale_leggings", "", "", "", "", 
+            "leather_boots", "iron_boots", "gold_boots", "diamond_boots", "dragon_scale_boots", "", "", "", ""
+        ],
+        "Food": [
+            "apple", "golden_apple", "lemon", "melon", "carrot", "carrot_golden", "potato", "potato_baked", "poisonous_potato", "beetroot",
+            "bread", "cookie", "soup", "beet_soup", "rabbit_stew", "pumpkin_pie", "cake", "ice_cream", "apple_candy", "candy_cane", "caramel", "chicken_nugget",
+            "bacon", "beef", "chicken", "fish", "mutton", "porkchop", "rabbit", "salmon",
+            "bacon_cooked", "chicken_cooked", "fish_cooked", "cooked_mutton", "porkchop_cooked", "rabbit_cooked", "salmon_cooked", "steak",
+            "apple_juice", "lemonade", "orange_juice",
+            "rotten_flesh", "spider_eye"
+        ],
+        "Redstone": [
+            "redstone", "piston", "piston_sticky", "redstone_torch", "redstone_lamp", 
+            "rail_detector", "rail_powered", "lever", "button", "pressure_plate", "pressure_plate_wooden", "dispenser", "dropper"
+        ],
+        "Transportation": [
+            "minecart", "rail", "minecart_furnace", "minecart_chest", "minecart_tnt", "raft"
+        ],
+        "Brewing": [
+            "brewing_stand", "potion", "bottle_of_enchanting", "glass_shard"
+        ],
+        "Miscellaneous": [
+            "diamond", "stick", "topaz", "coal", "charcoal", "iron_ingot", "gold_ingot", 
+            "ender_pearl", "eye_of_ender", "flint", "string", "feather"
+        ]
     };
 
     const emptyPixel = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
@@ -996,14 +1048,26 @@
         generateCommand();
     }
 
-    function switchItemTab(category, element) {
+function switchItemTab(category, element) {
         const tabsContainer = document.getElementById('item-tabs');
         tabsContainer.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         if (element) element.classList.add('active');
 
         const grid = document.getElementById('items-grid');
         grid.innerHTML = '';
-        const items = itemsData[category] || [];
+        
+        let items = [];
+        
+        // --- CÓDIGO NUEVO PARA LA PESTAÑA 'ALL' ---
+        if (category === 'All') {
+            for (const key in itemsData) {
+                // Filtramos los espacios en blanco ("") para que la pestaña "All" se vea limpia
+                items = items.concat(itemsData[key].filter(id => id !== "")); 
+            }
+        } else {
+            items = itemsData[category] || [];
+        }
+        // ----------------------------------------
         
         items.forEach(id => {
             if (id === "") {
