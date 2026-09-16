@@ -543,6 +543,18 @@
         height: 80%;
         image-rendering: pixelated;
     }
+	
+	/* Ocultar flechas en Chrome, Safari, Edge, Opera */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* Ocultar flechas en Firefox */
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
 </style>
 </head>
 <body>
@@ -583,7 +595,7 @@
             </div>
             <div class="input-group">
                 <label>Health:</label>
-                <input type="text" inputmode="numeric" id="inp-health" placeholder="20" oninput="this.value = this.value.replace(/[^0-9]/g, ''); generateCommand()">
+                <input type="text" inputmode="numeric" id="inp-health" placeholder="20" style="width: 80px; opacity: 0.33;" data-active="false" onfocus="this.style.opacity='1'; this.setAttribute('data-active', 'true'); generateCommand()" oninput="this.value = this.value.replace(/[^0-9]/g, ''); generateCommand()">
             </div>
             <div class="input-group" id="group-skin" style="display: none;">
                 <label>Skin ID:</label>
@@ -1111,7 +1123,7 @@ function switchItemTab(category, element) {
         closeItemInventory();
     }
 
-    function addDrop() {
+function addDrop() {
         const container = document.getElementById('drops-container');
         dropRowCounter++;
         
@@ -1122,6 +1134,7 @@ function switchItemTab(category, element) {
         row.style.alignItems = 'stretch';
         row.style.gap = '10px';
         
+        // --- ROW 1: Item, Name, Qty, Min, Max y Botón X ---
         const row1 = document.createElement('div');
         row1.style.display = 'flex';
         row1.style.gap = '10px';
@@ -1149,19 +1162,6 @@ function switchItemTab(category, element) {
         nameInput.style.flex = '1.5';
         nameInput.oninput = generateCommand;
 
-        const unbreakContainer = document.createElement('label');
-        unbreakContainer.className = 'inline-label drop-unbreak-container';
-        unbreakContainer.style.display = 'none';
-        unbreakContainer.style.margin = '0 10px';
-        
-        const unbreakInput = document.createElement('input');
-        unbreakInput.type = 'checkbox';
-        unbreakInput.className = 'drop-unbreak';
-        unbreakInput.onchange = generateCommand;
-        
-        unbreakContainer.appendChild(unbreakInput);
-        unbreakContainer.appendChild(document.createTextNode('Unbreakable'));
-
         const qtyLabel = document.createElement('label');
         qtyLabel.textContent = 'Qty:';
         qtyLabel.className = 'inline-label';
@@ -1171,9 +1171,61 @@ function switchItemTab(category, element) {
         qty.inputMode = 'numeric';
         qty.className = 'drop-qty';
         qty.value = 1;
-        qty.style.width = '60px';
-        qty.oninput = function() {
-            this.value = this.value.replace(/[^0-9]/g, '');
+        qty.style.width = '40px';
+        qty.style.minWidth = '40px';
+        qty.style.maxWidth = '40px';
+        qty.style.flex = 'none';
+        qty.style.opacity = '0.33';                 // <-- NUEVO
+        qty.setAttribute('data-active', 'false');   // <-- NUEVO
+        qty.onfocus = function() {                  // <-- NUEVO
+            this.style.opacity = '1';
+            this.setAttribute('data-active', 'true');
+            generateCommand();
+        };
+
+        const minLabel = document.createElement('label');
+        minLabel.textContent = 'Min:';
+        minLabel.className = 'inline-label';
+        
+        const minInput = document.createElement('input');
+        minInput.type = 'number';
+        minInput.className = 'drop-min';
+        minInput.value = 0;
+        minInput.min = 0;
+        minInput.max = 1;
+        minInput.step = 0.01;
+        minInput.style.width = '40px';
+        minInput.style.minWidth = '40px';
+        minInput.style.maxWidth = '40px';
+        minInput.style.flex = 'none';
+        minInput.style.opacity = '0.33';                 // <-- NUEVO
+        minInput.setAttribute('data-active', 'false');   // <-- NUEVO
+        minInput.onfocus = function() {                  // <-- NUEVO
+            this.style.opacity = '1';
+            this.setAttribute('data-active', 'true');
+            generateCommand();
+        };
+
+        const maxLabel = document.createElement('label');
+        maxLabel.textContent = 'Max:';
+        maxLabel.className = 'inline-label';
+        
+        const maxInput = document.createElement('input');
+        maxInput.type = 'number';
+        maxInput.className = 'drop-max';
+        maxInput.value = 1;
+        maxInput.min = 0;
+        maxInput.max = 1;
+        maxInput.step = 0.01;
+        maxInput.style.width = '60px';
+        maxInput.style.minWidth = '60px';
+        maxInput.style.maxWidth = '60px';
+        maxInput.style.flex = 'none';
+        maxInput.style.opacity = '0.33';                 // <-- NUEVO
+        maxInput.setAttribute('data-active', 'false');   // <-- NUEVO
+        maxInput.onfocus = function() {                  // <-- NUEVO
+            this.style.opacity = '1';
+            this.setAttribute('data-active', 'true');
             generateCommand();
         };
         
@@ -1181,14 +1233,24 @@ function switchItemTab(category, element) {
         removeBtn.textContent = 'X';
         removeBtn.className = 'mc-btn';
         removeBtn.style.padding = "6px 12px";
+        removeBtn.style.marginLeft = "auto";
         removeBtn.onclick = () => { row.remove(); generateCommand(); };
         
-        row1.append(selector, nameLabel, nameInput, unbreakContainer, qtyLabel, qty, removeBtn);
+        row1.append(selector, nameLabel, nameInput, qtyLabel, qty, minLabel, minInput, maxLabel, maxInput, removeBtn);
 
+        // --- ROW 2: Enchants y Unbreakable apilados ---
         const row2 = document.createElement('div');
         row2.style.display = 'flex';
+        row2.style.flexDirection = 'column';
         row2.style.gap = '10px';
         row2.style.alignItems = 'flex-start';
+        row2.style.width = '100%';
+
+        const enchantsRow = document.createElement('div');
+        enchantsRow.style.display = 'flex';
+        enchantsRow.style.gap = '10px';
+        enchantsRow.style.alignItems = 'flex-start';
+        enchantsRow.style.width = '100%';
 
         const enchLabel = document.createElement('label');
         enchLabel.textContent = 'Enchants:';
@@ -1281,13 +1343,27 @@ function switchItemTab(category, element) {
         });
 
         enchDropdown.append(enchTrigger, enchOptions);
-        row2.append(enchLabel, enchDropdown);
+        enchantsRow.append(enchLabel, enchDropdown);
+
+        const unbreakContainer = document.createElement('label');
+        unbreakContainer.className = 'inline-label drop-unbreak-container';
+        unbreakContainer.style.display = 'none';
+        
+        const unbreakInput = document.createElement('input');
+        unbreakInput.type = 'checkbox';
+        unbreakInput.className = 'drop-unbreak';
+        unbreakInput.onchange = generateCommand;
+        
+        unbreakContainer.appendChild(unbreakInput);
+        unbreakContainer.appendChild(document.createTextNode('Unbreakable'));
+
+        row2.append(enchantsRow, unbreakContainer);
         row.append(row1, row2);
         
         container.appendChild(row);
         openItemInventory(selector);
     }
-    
+	
     function toggleEnchant(optionElement) {
         const value = optionElement.getAttribute('data-value');
         const dropdown = optionElement.closest('.custom-dropdown');
@@ -1398,14 +1474,26 @@ function switchItemTab(category, element) {
         });
     }
 
-    function getDropsData() {
+function getDropsData() {
         const dropRows = document.querySelectorAll('.drop-row');
         let dropsArray = [];
         dropRows.forEach(row => {
             const selector = row.querySelector('.drop-item-selector');
             const itemId = selector.getAttribute('data-item-id');
             const itemName = row.querySelector('.drop-name').value.trim();
-            const qty = row.querySelector('.drop-qty').value || 1;
+            
+            const qtyEl = row.querySelector('.drop-qty');
+            const minEl = row.querySelector('.drop-min');
+            const maxEl = row.querySelector('.drop-max');
+            
+            const qtyVal = qtyEl.value || 1;
+            const minVal = minEl.value || 0;
+            const maxVal = maxEl.value || 1;
+            
+            // Evaluamos si el usuario hizo clic en las celdas
+            const isQtyActive = qtyEl.getAttribute('data-active') === 'true';
+            const isChanceActive = minEl.getAttribute('data-active') === 'true' || maxEl.getAttribute('data-active') === 'true';
+
             const isUnbreakable = row.querySelector('.drop-unbreak') ? row.querySelector('.drop-unbreak').checked : false;
             
             const selectedEnchElements = row.querySelectorAll('.ench-option.selected-ench');
@@ -1417,18 +1505,32 @@ function switchItemTab(category, element) {
                 if (itemName) itemProps.push(`name:"${itemName}"`);
                 if (isUnbreakable) itemProps.push(`unbreakable:true`);
                 if (enchantsList.length > 0) itemProps.push(`enchantments:[${enchantsList.join(', ')}]`);
-                dropsArray.push(`{item:{${itemProps.join(', ')}}, quantity:${qty}}`);
+                
+                // Construimos el bloque del Drop dinámicamente
+                let dropParts = [`item:{${itemProps.join(', ')}}`];
+                
+                if (isQtyActive) {
+                    dropParts.push(`quantity:${qtyVal}`);
+                }
+                if (isChanceActive) {
+                    dropParts.push(`chance:{min:${minVal}, max:${maxVal}}`);
+                }
+                
+                dropsArray.push(`{${dropParts.join(', ')}}`);
             }
         });
         return dropsArray;
     }
-
+	
     function generateCommand() {
         let tags = [];
         const name = document.getElementById('inp-name').value.trim();
         if (name) tags.push(`name:"${name}"`);
-        const health = document.getElementById('inp-health').value;
-        if (health) tags.push(`health:${health}`);
+const healthInput = document.getElementById('inp-health');
+        const healthVal = healthInput.value;
+        if (healthInput.getAttribute('data-active') === 'true' && healthVal) {
+            tags.push(`health:${healthVal}`);
+        }
         
         if (selectedMob !== 'spawnskin') {
             const defaultDrops = document.getElementById('inp-defaultDrops').checked;
@@ -1582,7 +1684,16 @@ function switchItemTab(category, element) {
         const extractBool = (key) => { const m = cmd.match(new RegExp(`${key}:(true|false)`)); return m ? (m[1]==='true') : false; };
 
         document.getElementById('inp-name').value = extractStr('name');
-        document.getElementById('inp-health').value = extractNum('health');
+        const extractedHealth = extractNum('health');
+        const healthInput = document.getElementById('inp-health');
+        healthInput.value = extractedHealth;
+        if (extractedHealth) {
+            healthInput.style.opacity = '1';
+            healthInput.setAttribute('data-active', 'true');
+        } else {
+            healthInput.style.opacity = '0.33';
+            healthInput.setAttribute('data-active', 'false');
+        }
         
         if(cmd.includes('defaultDrops:false')) document.getElementById('inp-defaultDrops').checked = false;
         else document.getElementById('inp-defaultDrops').checked = true;
@@ -1619,7 +1730,7 @@ function switchItemTab(category, element) {
             const dropsString = dropsMatch[1];
             const dropParts = dropsString.split('{item:').slice(1);
             
-            dropParts.forEach(part => {
+			dropParts.forEach(part => {
                 const idMatch = part.match(/id:"([^"]+)"/);
                 if (idMatch) {
                     const itemId = idMatch[1];
@@ -1627,7 +1738,8 @@ function switchItemTab(category, element) {
                     const qtyMatch = part.match(/quantity:(\d+)/);
                     const unbreakMatch = part.match(/unbreakable:true/);
                     const enchantsMatch = part.match(/enchantments:\[(.*?)\]/);
-                    
+                    const chanceMatch = part.match(/chance:\{min:([\d.]+),\s*max:([\d.]+)\}/); // <-- NUEVO
+
                     addDrop();
                     const currentRow = document.getElementById('drop-row-' + dropRowCounter);
                     
@@ -1639,8 +1751,26 @@ function switchItemTab(category, element) {
                     img.title = itemId;
                     
                     if (nameMatch) currentRow.querySelector('.drop-name').value = nameMatch[1];
-                    if (qtyMatch) currentRow.querySelector('.drop-qty').value = qtyMatch[1];
+                    if (qtyMatch) {
+                        const qtyInput = currentRow.querySelector('.drop-qty');
+                        qtyInput.value = qtyMatch[1];
+                        qtyInput.style.opacity = '1';
+                        qtyInput.setAttribute('data-active', 'true');
+                    }
                     
+                    if (chanceMatch) { 
+                        const minInput = currentRow.querySelector('.drop-min');
+                        const maxInput = currentRow.querySelector('.drop-max');
+                        
+                        minInput.value = chanceMatch[1];
+                        maxInput.value = chanceMatch[2];
+                        
+                        minInput.style.opacity = '1';
+                        minInput.setAttribute('data-active', 'true');
+                        maxInput.style.opacity = '1';
+                        maxInput.setAttribute('data-active', 'true');
+                    }
+
                     const isTool = ['pickaxe', 'hoe', 'shovel', 'sword', 'axe', 'bow', 'shears', 'fishing_rod'].some(tool => itemId.includes(tool));
                     const unbreakContainer = currentRow.querySelector('.drop-unbreak-container');
                     if (unbreakContainer && isTool) {
