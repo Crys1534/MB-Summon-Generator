@@ -612,8 +612,8 @@
         </div>
         
         <div class="input-row checkboxes-row">
-            <label class="inline-label" id="group-defaultDrops">
-                <input type="checkbox" id="inp-defaultDrops" checked onchange="generateCommand()"> 
+            <label class="inline-label" id="group-defaultDrops" style="opacity: 0.33;" data-active="false">
+                <input type="checkbox" id="inp-defaultDrops" checked autocomplete="off" onchange="document.getElementById('group-defaultDrops').style.opacity='1'; document.getElementById('group-defaultDrops').setAttribute('data-active', 'true'); generateCommand()"> 
                 Default Drops
             </label>
             <label class="inline-label" id="group-charged" style="display: none;">
@@ -953,8 +953,18 @@ const itemsData = {
 
     function init() {
         loadFromStorage();
-		
-		document.getElementById('inp-armor-enable').checked = false;
+        
+        // --- LIMPIEZA FORZADA AL CARGAR LA PÁGINA ---
+        document.getElementById('inp-armor-enable').checked = false;
+        document.getElementById('inp-name').value = ''; 
+        
+        const defaultDropsLabel = document.getElementById('group-defaultDrops');
+        if (defaultDropsLabel) {
+            defaultDropsLabel.style.opacity = '0.33';
+            defaultDropsLabel.setAttribute('data-active', 'false');
+            document.getElementById('inp-defaultDrops').checked = true;
+        }
+        // ---------------------------------------------
 		
         switchTab('Overworld', document.querySelector('#inv-modal .tab:nth-child(2)'));
         updateVisibility();
@@ -1562,8 +1572,12 @@ const healthInput = document.getElementById('inp-health');
         }
         
         if (selectedMob !== 'spawnskin') {
-            const defaultDrops = document.getElementById('inp-defaultDrops').checked;
-            tags.push(`defaultDrops:${defaultDrops}`);
+            const dropLabel = document.getElementById('group-defaultDrops');
+            // Solo lo inyecta al comando si el usuario interactuó (data-active es true)
+            if (dropLabel.getAttribute('data-active') === 'true') {
+                const defaultDrops = document.getElementById('inp-defaultDrops').checked;
+                tags.push(`defaultDrops:${defaultDrops}`);
+            }
         }
         
         const babyCheckbox = document.getElementById('inp-baby');
@@ -1730,8 +1744,23 @@ function confirmImportCommand() {
         }
         // ------------------------------------------
         
-        if(cmd.includes('defaultDrops:false')) document.getElementById('inp-defaultDrops').checked = false;
-        else document.getElementById('inp-defaultDrops').checked = true;
+        const defaultDropsLabel = document.getElementById('group-defaultDrops');
+        const defaultDropsInput = document.getElementById('inp-defaultDrops');
+        
+        if (cmd.includes('defaultDrops:false')) {
+            defaultDropsInput.checked = false;
+            defaultDropsLabel.style.opacity = '1';
+            defaultDropsLabel.setAttribute('data-active', 'true');
+        } else if (cmd.includes('defaultDrops:true')) {
+            defaultDropsInput.checked = true;
+            defaultDropsLabel.style.opacity = '1';
+            defaultDropsLabel.setAttribute('data-active', 'true');
+        } else {
+            // Si el comando no menciona nada de los drops, se queda opaco por defecto
+            defaultDropsInput.checked = true;
+            defaultDropsLabel.style.opacity = '0.33';
+            defaultDropsLabel.setAttribute('data-active', 'false');
+        }
 
         document.getElementById('inp-holding').value = extractStr('holding');
         document.getElementById('inp-aggro').value = extractStr('aggro') || 'neutral';
