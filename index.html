@@ -939,7 +939,7 @@ const itemsData = {
         ],
         "Miscellaneous": [
             "diamond", "stick", "topaz", "coal", "charcoal", "iron_ingot", "gold_ingot", 
-            "ender_pearl", "eye_of_ender", "flint", "string", "feather"
+            "ender_pearl", "eye_of_ender", "flint", "string", "feather", "command_book",
         ]
     };
 
@@ -954,6 +954,34 @@ const itemsData = {
     let savedCommands = [];
     let communityCommands = [
 
+    {
+        "id": 1789659570310,
+        "name": "Herorbrine",
+        "command": "/summon spawnskin 1 ~ ~ {name:\"Herorbrine\", health:1000, aggro:\"hostile\", skin:42817}",
+        "mob": "spawnskin",
+        "isSaved": true,
+        "drops": [],
+        "skinId": "42817",
+        "skinBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAWCAYAAADJqhx8AAAB/ElEQVQ4T6WRS0gbURSGf5lMHuZVIVUXoXRbu5C0i0JS2kVBWlwJxY1gIX1BUnQviGC7qLiplARSdGEhiwoliy5slbZQsG7ETWsXbaE2SNSgxIwxcZLJXLk3nWE6t5mA/TZzz3/u+S6HacN/0qafTgkn6D3vJYoK1FUVqkog2gQQAgiCwPpfNg/+muEEF895Cf067TZ47Dbsl2Qoah1upx3HVQUb2cPWgun4HZzxBlA5LqGwk8PTzFscVaqoKSp+7pStBQvjD0i7wwFZAXwuEb83v7P8+bsV1JU6vmYlawEhhNSqCpYnH8Huc+PKwyfw+l2IXDiLaCSEe3PL1oLZu32kqzuIxZV1Vt++eRVb2R/IHUjwiU7E5j9aC54N3yDbW5JeU7qDLuR2i+jwiBh7vWYtQCpFIIrs+HLtFX7tSpjov/+nCSAatRBkMgT5PNDZCcgyUC4DtRrg9wMOB/TewIA+11xAKRQaAq1uJaC/cE86QqznGj+UzyP57ROLYjPp5gL6HQxebgzRNYpF/ZxcfYOAz43Bxy/+LUiODhF24dKtRkBf1/aXZSxsfGBxS8Hs++t6prE0IjABW7HZChp94TRbxczS5yHuPhdQNIE2YK6NcAElHJoiHldQHzDXRriAYn7RXBvhAop5wFwb4YJ4PM4uUxKJBOtrmVYbOQGKDOAXVtfcHgAAAABJRU5ErkJggg==",
+        "armor": [
+            "",
+            "",
+            "",
+            ""
+        ],
+        "tags": {
+            "Name": "Herorbrine",
+            "Health": "1000",
+            "Aggro": "hostile",
+            "Color": "",
+            "Holding": "",
+            "Baby": false,
+            "Charged": false,
+            "Sheared": false,
+            "Default Drops": true
+        }
+    },
+	
     {
         "id": 1789544167473,
         "name": "Zanzlanz",
@@ -1087,6 +1115,28 @@ const itemsData = {
                 const ctx = canvas.getContext('2d');
                 ctx.imageSmoothingEnabled = false;
                 ctx.drawImage(tempImg, 0, 0, 16, 22, 0, 0, 16, 22);
+
+                // --- ELIMINACIÓN DE COLOR GLOBAL (VARITA MÁGICA) ---
+                const imgData = ctx.getImageData(0, 0, 16, 22);
+                const data = imgData.data;
+
+                // Tomamos el color del píxel de la esquina superior izquierda (0,0) como referencia
+                const bgR = data[0], bgG = data[1], bgB = data[2], bgA = data[3];
+
+                // Solo ejecutamos si hay un color (si no es transparente ya)
+                if (bgA > 0) {
+                    // Recorremos TODOS los píxeles de la imagen (avanzando de 4 en 4: R, G, B, A)
+                    for (let i = 0; i < data.length; i += 4) {
+                        // Si el píxel es EXACTAMENTE igual al color de fondo
+                        if (data[i] === bgR && data[i+1] === bgG && data[i+2] === bgB && data[i+3] === bgA) {
+                            data[i+3] = 0; // Lo hacemos totalmente transparente
+                        }
+                    }
+                    // Aplicamos los cambios al canvas
+                    ctx.putImageData(imgData, 0, 0);
+                }
+                // ---------------------------------------------------
+
                 imgEl.src = canvas.toDataURL('image/png');
                 imgEl.style.display = 'block';
             };
