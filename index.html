@@ -308,8 +308,8 @@
     }
     
     .inventory-grid {
+        grid-template-columns: repeat(5, 1fr);
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
         gap: 0;
         flex-grow: 1;
         align-content: start;
@@ -341,6 +341,11 @@
         image-rendering: pixelated;
         margin-bottom: 10px;
     }
+	#inv-grid .inv-card > img {
+        width: 111px;     
+        height: 131px;   
+    }
+	
     .inv-card-name {
         font-size: 18px;
         color: #ffffff;
@@ -632,8 +637,12 @@
         
         <div id="group-holding" class="conditional-group">
             <h3>Holding Item</h3>
-            <label>Item ID (e.g., diamond_sword):</label>
-            <input type="text" id="inp-holding" placeholder="diamond_sword" oninput="generateCommand()">
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 5px;">
+                <div class="drop-item-selector" id="holding-selector" data-item-id="" onclick="openItemInventory(this)">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" title="Click to select item">
+                </div>
+                <button class="mc-btn" style="padding: 4px 8px; font-size: 16px;" onclick="clearHoldingItem()">Clear</button>
+            </div>
         </div>
         
         <div class="input-row" style="margin-bottom: 0; align-items: stretch;">
@@ -866,7 +875,7 @@
 
 <script>
     const mobsData = {
-        Animals: ['pig', 'cow', 'sheep', 'chicken', 'squid', 'rabbit', 'bat', 'dog', 'wolf', 'mooshroom', 'cowctus'],
+        Animals: ['pig', 'cow', 'sheep', 'chicken', 'squid', 'rabbit', 'bat', 'wolf', 'mooshroom', 'cowctus'],
         Overworld: ['zombie', 'creeper', 'skeleton', 'spider', 'slime', 'snow_golem', 'spawnskin'],
         Nether: ['zombie_pigman', 'ghast', 'blaze', 'magma_cube', 'nethereye'],
         End: ['enderman', 'ender_dragon']
@@ -939,7 +948,7 @@ const itemsData = {
 
     let selectedMob = 'zombie';
     let armorState = { helmet: "", chestplate: "", leggings: "", boots: "" };
-    let activeDropRow = null;
+    let activeItemSelector = null;
     let dropRowCounter = 0;
 
     // Persistencia y Bases de datos
@@ -963,6 +972,13 @@ const itemsData = {
             defaultDropsLabel.style.opacity = '0.33';
             defaultDropsLabel.setAttribute('data-active', 'false');
             document.getElementById('inp-defaultDrops').checked = true;
+        }
+		
+		// ---> AQUÍ PEGAS EL CÓDIGO DEL HOLDING ITEM <---
+        const holdingSelector = document.getElementById('holding-selector');
+        if (holdingSelector) {
+            holdingSelector.setAttribute('data-item-id', '');
+            holdingSelector.querySelector('img').src = emptyPixel;
         }
         // ---------------------------------------------
 		
@@ -992,12 +1008,12 @@ const itemsData = {
     
     function closeItemInventory() {
         document.getElementById('items-modal').style.display = 'none';
-        activeDropRow = null; 
+        activeItemSelector = null; 
     }
     
     function closeModals() { 
         document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
-        activeDropRow = null; 
+        activeItemSelector = null; 
     }
 
     // Funciones de LocalStorage
@@ -1018,7 +1034,7 @@ const itemsData = {
     
     function openInventory() { document.getElementById('inv-modal').style.display = 'flex'; }
     function openItemInventory(selectorElement) {
-        activeDropRow = selectorElement.closest('.drop-row');
+        activeItemSelector = selectorElement;
         document.getElementById('items-modal').style.display = 'flex';
     }
     function openSaveModal() { document.getElementById('save-modal').style.display = 'flex'; }
@@ -1064,6 +1080,14 @@ const itemsData = {
                 const img = document.createElement('img');
                 img.src = `mobs/${mob}.png`;
                 img.onerror = function() { this.style.display = 'none'; };
+                
+                // --- REGLA VIP PARA ENDER DRAGON ---
+                if (mob === 'ender_dragon') {
+                    card.style.gridColumn = 'span 3'; // Ocupa 3 columnas!
+                    img.style.width = '90%';          // Aprovecha el nuevo ancho
+                    img.style.height = 'auto';        // Mantiene proporciones
+                }
+                // -----------------------------------
                 
                 const nameLabel = document.createElement('span');
                 nameLabel.className = 'inv-card-name';
@@ -1131,23 +1155,35 @@ function switchItemTab(category, element) {
     }
 
     function selectDropItem(itemId) {
-        if (activeDropRow) {
-            const selector = activeDropRow.querySelector('.drop-item-selector');
-            selector.setAttribute('data-item-id', itemId);
-            const img = selector.querySelector('img');
+        if (activeItemSelector) {
+            activeItemSelector.setAttribute('data-item-id', itemId);
+            const img = activeItemSelector.querySelector('img');
             img.src = `items/${itemId}.png`;
             img.onerror = function() { this.src = emptyPixel; };
             img.title = itemId; 
 
-            const isTool = ['pickaxe', 'hoe', 'shovel', 'sword', 'axe', 'bow', 'shears', 'fishing_rod'].some(tool => itemId.includes(tool));
-            const unbreakContainer = activeDropRow.querySelector('.drop-unbreak-container');
-            if (unbreakContainer) {
-                unbreakContainer.style.display = isTool ? 'inline-flex' : 'none';
-                if (!isTool) activeDropRow.querySelector('.drop-unbreak').checked = false;
+            // Verificamos si estamos configurando un Drop (y NO el Holding Item)
+            const dropRow = activeItemSelector.closest('.drop-row');
+            if (dropRow) {
+                const isTool = ['pickaxe', 'hoe', 'shovel', 'sword', 'axe', 'bow', 'shears', 'fishing_rod'].some(tool => itemId.includes(tool));
+                const unbreakContainer = dropRow.querySelector('.drop-unbreak-container');
+                if (unbreakContainer) {
+                    unbreakContainer.style.display = isTool ? 'inline-flex' : 'none';
+                    if (!isTool) dropRow.querySelector('.drop-unbreak').checked = false;
+                }
             }
             generateCommand();
         }
         closeItemInventory();
+    }
+
+    function clearHoldingItem() {
+        const selector = document.getElementById('holding-selector');
+        selector.setAttribute('data-item-id', '');
+        const img = selector.querySelector('img');
+        img.src = emptyPixel;
+        img.title = "Click to select item";
+        generateCommand();
     }
 
 function addDrop() {
@@ -1440,7 +1476,7 @@ function addDrop() {
         show('group-armor', ['zombie', 'spawnskin'].includes(mob), 'flex');
         show('group-aggro', mob === 'spawnskin', 'flex');
         show('group-skin', mob === 'spawnskin'); 
-        show('group-color', ['sheep', 'dog'].includes(mob));
+        show('group-color', ['sheep'].includes(mob));
         show('group-charged', mob === 'creeper', 'inline-flex');
         show('group-baby', ['chicken', 'sheep', 'rabbit', 'pig', 'wolf', 'cow', 'mooshroom', 'cowctus'].includes(mob), 'inline-flex');
         show('group-sheared', mob === 'sheep', 'inline-flex');
@@ -1448,16 +1484,22 @@ function addDrop() {
 
         // --- Ajuste Anti-Deformación para Mob Target ---
         const baseMobImg = document.querySelector('.preview-box img.base-mob');
+        
         if (['zombie', 'spawnskin'].includes(mob)) {
-            // Mantiene las proporciones exactas para que la armadura encaje
             baseMobImg.style.width = '256px';
             baseMobImg.style.height = '347px';
             baseMobImg.style.objectFit = 'fill';
-        } else {
-            // Adapta cualquier otro mob a la caja sin aplastarlo ni estirarlo
-            baseMobImg.style.width = '90%';
-            baseMobImg.style.height = '260px';
+            baseMobImg.style.marginBottom = '0px';
+        } else if (mob === 'ender_dragon') {
+            baseMobImg.style.width = '95%';
+            baseMobImg.style.height = 'auto';
             baseMobImg.style.objectFit = 'contain';
+            baseMobImg.style.marginBottom = '100px'; // Hace que el dragón "vuele" un poco
+        } else {
+            baseMobImg.style.width = '90%'; // (o tu valor personalizado)
+            baseMobImg.style.height = '260px'; // (o tu valor personalizado)
+            baseMobImg.style.objectFit = 'contain';
+            baseMobImg.style.marginBottom = '0px';
         }
     }
 
@@ -1589,7 +1631,7 @@ const healthInput = document.getElementById('inp-health');
         }
 
         if (['enderman', 'zombie_pigman'].includes(selectedMob)) {
-            const holding = document.getElementById('inp-holding').value.trim();
+            const holding = document.getElementById('holding-selector').getAttribute('data-item-id');
             if (holding) tags.push(`holding:"${holding}"`);
         }
         
@@ -1620,7 +1662,7 @@ const healthInput = document.getElementById('inp-health');
         
         if (selectedMob === 'creeper' && document.getElementById('inp-charged').checked) tags.push(`charged:true`);
         if (['chicken', 'sheep', 'rabbit', 'pig', 'wolf', 'cow', 'mooshroom', 'cowctus'].includes(selectedMob) && document.getElementById('inp-baby').checked) tags.push(`baby:true`);
-        if (['sheep', 'dog'].includes(selectedMob) && document.getElementById('inp-color').value) tags.push(`color:"${document.getElementById('inp-color').value}"`);
+        if (['sheep'].includes(selectedMob) && document.getElementById('inp-color').value) tags.push(`color:"${document.getElementById('inp-color').value}"`);
         if (selectedMob === 'sheep' && document.getElementById('inp-sheared').checked) tags.push(`sheared:true`);
         
         const dropsArray = getDropsData();
@@ -1658,7 +1700,7 @@ const healthInput = document.getElementById('inp-health');
                 Health: document.getElementById('inp-health').value,
                 Aggro: document.getElementById('inp-aggro').value,
                 Color: document.getElementById('inp-color').value,
-                Holding: document.getElementById('inp-holding').value.trim(),
+                Holding: document.getElementById('holding-selector').getAttribute('data-item-id'),
                 Baby: document.getElementById('inp-baby').checked,
                 Charged: document.getElementById('inp-charged').checked,
                 Sheared: document.getElementById('inp-sheared').checked,
@@ -1762,7 +1804,17 @@ function confirmImportCommand() {
             defaultDropsLabel.setAttribute('data-active', 'false');
         }
 
-        document.getElementById('inp-holding').value = extractStr('holding');
+        const holdingItem = extractStr('holding');
+        const holdingSelector = document.getElementById('holding-selector');
+        holdingSelector.setAttribute('data-item-id', holdingItem);
+        const holdingImg = holdingSelector.querySelector('img');
+        if (holdingItem) {
+            holdingImg.src = `items/${holdingItem}.png`;
+            holdingImg.title = holdingItem;
+        } else {
+            holdingImg.src = emptyPixel;
+            holdingImg.title = "Click to select item";
+        }
         document.getElementById('inp-aggro').value = extractStr('aggro') || 'neutral';
         
         const extractedSkin = extractNum('skin');
@@ -1915,6 +1967,13 @@ function confirmImportCommand() {
             const previewWrapper = document.createElement('div');
             previewWrapper.className = 'card-preview-wrapper';
             
+            // --- EL DRAGÓN OCUPA 3 COLUMNAS ---
+            if (item.mob === 'ender_dragon') {
+                card.style.gridColumn = 'span 3';
+                previewWrapper.style.width = '100%'; // Expandimos su contenedor interno
+            }
+            // ----------------------------------
+            
             const scaler = document.createElement('div');
             scaler.className = 'card-preview-scaler';
             
@@ -1929,9 +1988,14 @@ function confirmImportCommand() {
                 baseImg.style.width = '256px';
                 baseImg.style.height = '347px';
                 baseImg.style.objectFit = 'fill';
+            } else if (item.mob === 'ender_dragon') {
+                baseImg.style.width = '100%';
+                baseImg.style.height = 'auto';
+                baseImg.style.objectFit = 'contain';
+                baseImg.style.marginBottom = '20px'; // Lo centramos visualmente
             } else {
-                baseImg.style.width = '190%';
-                baseImg.style.height = '260px';
+                baseImg.style.width = '190%'; // (o el número que hayas elegido)
+                baseImg.style.height = '260px'; // (o el número que hayas elegido)
                 baseImg.style.objectFit = 'contain';
             }
             // -----------------------------------------------
