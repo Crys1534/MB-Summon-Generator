@@ -953,10 +953,37 @@ const itemsData = {
     // Persistencia y Bases de datos
     let savedCommands = [];
     let communityCommands = [
-	
-	
-	
-	]; 
+
+    {
+        "id": 1789544167473,
+        "name": "Zanzlanz",
+        "command": "/summon spawnskin 1 ~ ~ {name:\"Zanzlanz\", aggro:\"neutral\", skin:12693, drops:[{item:{id:\"mob_head\", name:\"Zanzlanz' head\"}, quantity:1}]}",
+        "mob": "spawnskin",
+        "isSaved": true,
+        "drops": [
+            "mob_head"
+        ],
+        "skinId": "12693",
+        "skinBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAWCAYAAADJqhx8AAACf0lEQVQ4T6WUX0hTYRjGnzMzd7YOKGITzLQiyrChGYkEXgiFV0Z1VylNpsaK0dKWaCiLrNhmipWwzTRWUhERBIE3euFFJikWk0Z1I1awuf4oR3eOlvvifHjm9OiEeuDwvu/zvu+Pj/OPwX+KiWb/KAVgG0DkfH4pJsXkoVU7CkAaQLK2ahGYmkNxXgYG332j/p7sFHyc+IWvGwFyk1myOyMFZ4/qgU2b8ftPBAvz83g8MI6JwDR800J8gO+2geRaulHAMHA0HsPO7CycrOrAKCE4qEvG6NTMxgCNhgXDMPTieR4cx9Ge+/5b3Bwejg8YbzMQlmUhCAKte598WOoAFaf3I8fcFR8wZi8nIJFoLUt2Cq70xgf06ED6j5zBqVePECwrBBJUeJOox4mnLrxvsMNqta4PkJZ/XHYi1VGH6mAx3LpByHVNsAQu3QCE5k6YTKbo3gqAzWYj2zubMWmyQYqhWjvSWq34cv4aMu810Tjb3gT7z+U9xQlqgqVw6fowXd+GxBsWXAqVoim1D7Bch99xFc9mSrCAgbUBXq+XjF2sQH67F1LUt/ZgpNaAHQ1O+FvqkNPoxJCtDs/5dU5QrQV5OFeFcq0HUjy+xYMXs9Uo49x4yVehSO3Ba9EAET1rA/wdRvohHTAzOKT2YFg0okjdhSGxEofV3bhrN9K52HdhBUCWOtNOoNKAUQGMKgkkwoAsfoc4Wa+YVxiS1LtaCBI0ED9ZaJ/d+4CQxTDEz8uPT5bCkMTuu0UBgs9M+5o8NyGLEQi+c4p5hSGJzb9DmAQtwiOVtK8t7KYnCI9cUMwrDEnp6en0ZgYCAdpfXcdKYXAcF/2l8TxP+7In17H6C/Y58ReKdoeDAAAAAElFTkSuQmCC",
+        "armor": [
+            "",
+            "",
+            "",
+            ""
+        ],
+        "tags": {
+            "Name": "Zanzlanz",
+            "Health": "",
+            "Aggro": "neutral",
+            "Color": "",
+            "Holding": "",
+            "Baby": false,
+            "Charged": false,
+            "Sheared": false,
+            "Default Drops": true
+        }
+    },
+];
     let activeSidebarMob = null;
 
     function init() {
@@ -1036,7 +1063,11 @@ const itemsData = {
         activeItemSelector = selectorElement;
         document.getElementById('items-modal').style.display = 'flex';
     }
-    function openSaveModal() { document.getElementById('save-modal').style.display = 'flex'; }
+    function openSaveModal() { 
+        document.getElementById('save-modal').style.display = 'flex'; 
+        // Copia el texto de Custom Name a la celda del modal
+        document.getElementById('inp-save-name').value = document.getElementById('inp-name').value.trim();
+    }
     function openImportModal() { document.getElementById('import-modal').style.display = 'flex'; }
     function openMobInventoryModal() { 
         document.getElementById('mob-inventory-modal').style.display = 'flex'; 
