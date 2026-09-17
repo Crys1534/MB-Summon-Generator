@@ -26,6 +26,9 @@
         display: flex;
         align-items: center;
         padding: 2px 16px;
+        position: sticky;   
+        top: 0;        
+        z-index: 100;      
     }
 	.top-bar .mc-btn {
         border-radius: 5px;
@@ -43,8 +46,8 @@
         min-height: 44px; /* Asegura que la barra siempre tenga espacio aunque esté vacía */
     }
     .hotbar-slot {
-        width: 34px;
-        height: 34px;
+        width: 32px;
+        height: 32px;
         background-color: #333333;
         border: 2px solid #5a5a5a;
         display: flex;
@@ -561,7 +564,6 @@
 
 <div class="top-bar">
     <img src="favicon.ico" class="favicon" onerror="this.style.display='none'" alt="Favicon">
-    <button class="mc-btn" style="padding: 4px 10px;" onclick="openSaveModal()">Save</button>
     <button class="mc-btn" style="padding: 4px 10px;" onclick="openImportModal()">Import command</button>
     <button class="mc-btn" style="padding: 4px 10px;" onclick="openMobInventoryModal()">Mob Inventory</button>
     
@@ -586,16 +588,19 @@
 
     <!-- Right Column: Options -->
     <div class="right-col mc-ui">
-        <h2>Attributes & Tags</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2 style="margin: 0;">Attributes & Tags</h2>
+            <button class="mc-btn" onclick="openSaveModal()">💾 SAVE COMMAND</button>
+        </div>
         
         <div class="input-row">
             <div class="input-group">
                 <label>Custom Name:</label>
-                <input type="text" id="inp-name" value="Crystal" placeholder="Crystal" oninput="generateCommand()">
+                <input type="text" id="inp-name" value="Crystal" placeholder="" oninput="generateCommand()">
             </div>
             <div class="input-group">
-                <label>Health:</label>
-                <input type="text" inputmode="numeric" id="inp-health" placeholder="20" style="width: 80px; opacity: 0.33;" data-active="false" onfocus="this.style.opacity='1'; this.setAttribute('data-active', 'true'); generateCommand()" oninput="this.value = this.value.replace(/[^0-9]/g, ''); generateCommand()">
+                <label id="lbl-health" style="opacity: 0.33;">Health:</label>
+                <input type="text" inputmode="numeric" id="inp-health" placeholder="20" style="width: 80px; opacity: 0.33;" data-active="false" onfocus="this.style.opacity='1'; document.getElementById('lbl-health').style.opacity='1'; this.setAttribute('data-active', 'true'); generateCommand()" oninput="this.value = this.value.replace(/[^0-9]/g, ''); generateCommand()">
             </div>
             <div class="input-group" id="group-skin" style="display: none;">
                 <label>Skin ID:</label>
@@ -734,9 +739,7 @@
         </div>
 
         <!-- Output Display -->
-        <div style="margin-top: 25px; display: flex; justify-content: flex-end;">
-            <button class="mc-btn" onclick="openSaveModal()">Save Command</button>
-        </div>
+        <div style="margin-top: 25px;"></div>
         <div class="command-output" id="output-command" onclick="copyCommand()">
             /summon zombie 1 ~ ~
         </div>
@@ -818,9 +821,16 @@
         <div class="inventory-split">
             <!-- Left Pane -->
             <div class="inventory-left">
-                <div class="tabs">
-                    <div class="tab active" onclick="switchInventoryTab('Saved', this)">Saved</div>
-                    <div class="tab" onclick="switchInventoryTab('Community', this)">Community</div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div class="tabs">
+                        <div class="tab active" onclick="switchInventoryTab('Saved', this)">Saved</div>
+                        <div class="tab" onclick="switchInventoryTab('Community', this)">Community</div>
+                    </div>
+                    <div style="display: flex; gap: 5px; margin-bottom: 4px;">
+                        <input type="file" id="inp-import-file" style="display: none;" accept=".json" onchange="importSavedMobs(event)">
+                        <button class="mc-btn" style="padding: 4px 10px;" onclick="document.getElementById('inp-import-file').click()">Import</button>
+                        <button class="mc-btn" style="padding: 4px 10px;" onclick="exportSavedMobs()">Export</button>
+                    </div>
                 </div>
                 <div class="inventory-grid mc-ui-inset" id="mob-inventory-grid" style="flex-grow: 1;"></div>
             </div>
@@ -934,11 +944,18 @@ const itemsData = {
 
     // Persistencia y Bases de datos
     let savedCommands = [];
-    let communityCommands = []; 
+    let communityCommands = [
+	
+	
+	
+	]; 
     let activeSidebarMob = null;
 
     function init() {
         loadFromStorage();
+		
+		document.getElementById('inp-armor-enable').checked = false;
+		
         switchTab('Overworld', document.querySelector('#inv-modal .tab:nth-child(2)'));
         updateVisibility();
         switchItemTab('Blocks', document.querySelector('#item-tabs .tab'));
@@ -1163,8 +1180,9 @@ function addDrop() {
         nameInput.oninput = generateCommand;
 
         const qtyLabel = document.createElement('label');
-        qtyLabel.textContent = 'Qty:';
-        qtyLabel.className = 'inline-label';
+        qtyLabel.textContent = 'Quantity:';
+        qtyLabel.className = 'inline-label drop-qty-label'; // <-- Clase nueva
+        qtyLabel.style.opacity = '0.33';                    // <-- Opacidad nueva
         
         const qty = document.createElement('input');
         qty.type = 'text';
@@ -1175,17 +1193,23 @@ function addDrop() {
         qty.style.minWidth = '40px';
         qty.style.maxWidth = '40px';
         qty.style.flex = 'none';
-        qty.style.opacity = '0.33';                 // <-- NUEVO
-        qty.setAttribute('data-active', 'false');   // <-- NUEVO
-        qty.onfocus = function() {                  // <-- NUEVO
+        qty.style.opacity = '0.33';
+        qty.setAttribute('data-active', 'false');
+        qty.onfocus = function() {
             this.style.opacity = '1';
+            qtyLabel.style.opacity = '1'; // <-- Enciende el texto
             this.setAttribute('data-active', 'true');
+            generateCommand();
+        };
+        qty.oninput = function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
             generateCommand();
         };
 
         const minLabel = document.createElement('label');
         minLabel.textContent = 'Min:';
-        minLabel.className = 'inline-label';
+        minLabel.className = 'inline-label drop-min-label'; // <-- Clase nueva
+        minLabel.style.opacity = '0.33';                    // <-- Opacidad nueva
         
         const minInput = document.createElement('input');
         minInput.type = 'number';
@@ -1194,21 +1218,24 @@ function addDrop() {
         minInput.min = 0;
         minInput.max = 1;
         minInput.step = 0.01;
-        minInput.style.width = '40px';
-        minInput.style.minWidth = '40px';
-        minInput.style.maxWidth = '40px';
+        minInput.style.width = '60px';
+        minInput.style.minWidth = '60px';
+        minInput.style.maxWidth = '60px';
         minInput.style.flex = 'none';
-        minInput.style.opacity = '0.33';                 // <-- NUEVO
-        minInput.setAttribute('data-active', 'false');   // <-- NUEVO
-        minInput.onfocus = function() {                  // <-- NUEVO
+        minInput.style.opacity = '0.33';
+        minInput.setAttribute('data-active', 'false');
+        minInput.onfocus = function() {
             this.style.opacity = '1';
+            minLabel.style.opacity = '1'; // <-- Enciende el texto
             this.setAttribute('data-active', 'true');
             generateCommand();
         };
+        minInput.oninput = generateCommand;
 
         const maxLabel = document.createElement('label');
         maxLabel.textContent = 'Max:';
-        maxLabel.className = 'inline-label';
+        maxLabel.className = 'inline-label drop-max-label'; // <-- Clase nueva
+        maxLabel.style.opacity = '0.33';                    // <-- Opacidad nueva
         
         const maxInput = document.createElement('input');
         maxInput.type = 'number';
@@ -1221,13 +1248,15 @@ function addDrop() {
         maxInput.style.minWidth = '60px';
         maxInput.style.maxWidth = '60px';
         maxInput.style.flex = 'none';
-        maxInput.style.opacity = '0.33';                 // <-- NUEVO
-        maxInput.setAttribute('data-active', 'false');   // <-- NUEVO
-        maxInput.onfocus = function() {                  // <-- NUEVO
+        maxInput.style.opacity = '0.33';
+        maxInput.setAttribute('data-active', 'false');
+        maxInput.onfocus = function() {
             this.style.opacity = '1';
+            maxLabel.style.opacity = '1'; // <-- Enciende el texto
             this.setAttribute('data-active', 'true');
             generateCommand();
         };
+        maxInput.oninput = generateCommand;
         
         const removeBtn = document.createElement('button');
         removeBtn.textContent = 'X';
@@ -1665,7 +1694,7 @@ const healthInput = document.getElementById('inp-health');
         }
     }
 
-    function confirmImportCommand() {
+function confirmImportCommand() {
         let cmd = document.getElementById('inp-import-cmd').value.trim();
         cmd = cmd.replace(/[\u2800\u200B]/g, ''); 
         
@@ -1684,16 +1713,22 @@ const healthInput = document.getElementById('inp-health');
         const extractBool = (key) => { const m = cmd.match(new RegExp(`${key}:(true|false)`)); return m ? (m[1]==='true') : false; };
 
         document.getElementById('inp-name').value = extractStr('name');
+        
+        // --- ACTUALIZACIÓN DE HEALTH Y SU TEXTO ---
         const extractedHealth = extractNum('health');
         const healthInput = document.getElementById('inp-health');
+        const healthLabel = document.getElementById('lbl-health');
         healthInput.value = extractedHealth;
         if (extractedHealth) {
             healthInput.style.opacity = '1';
+            if (healthLabel) healthLabel.style.opacity = '1';
             healthInput.setAttribute('data-active', 'true');
         } else {
             healthInput.style.opacity = '0.33';
+            if (healthLabel) healthLabel.style.opacity = '0.33';
             healthInput.setAttribute('data-active', 'false');
         }
+        // ------------------------------------------
         
         if(cmd.includes('defaultDrops:false')) document.getElementById('inp-defaultDrops').checked = false;
         else document.getElementById('inp-defaultDrops').checked = true;
@@ -1730,7 +1765,7 @@ const healthInput = document.getElementById('inp-health');
             const dropsString = dropsMatch[1];
             const dropParts = dropsString.split('{item:').slice(1);
             
-			dropParts.forEach(part => {
+            dropParts.forEach(part => {
                 const idMatch = part.match(/id:"([^"]+)"/);
                 if (idMatch) {
                     const itemId = idMatch[1];
@@ -1738,7 +1773,7 @@ const healthInput = document.getElementById('inp-health');
                     const qtyMatch = part.match(/quantity:(\d+)/);
                     const unbreakMatch = part.match(/unbreakable:true/);
                     const enchantsMatch = part.match(/enchantments:\[(.*?)\]/);
-                    const chanceMatch = part.match(/chance:\{min:([\d.]+),\s*max:([\d.]+)\}/); // <-- NUEVO
+                    const chanceMatch = part.match(/chance:\{min:([\d.]+),\s*max:([\d.]+)\}/);
 
                     addDrop();
                     const currentRow = document.getElementById('drop-row-' + dropRowCounter);
@@ -1751,25 +1786,35 @@ const healthInput = document.getElementById('inp-health');
                     img.title = itemId;
                     
                     if (nameMatch) currentRow.querySelector('.drop-name').value = nameMatch[1];
+                    
+                    // --- ACTUALIZACIÓN DE QTY, MIN, MAX Y SUS TEXTOS ---
                     if (qtyMatch) {
                         const qtyInput = currentRow.querySelector('.drop-qty');
+                        const qtyLbl = currentRow.querySelector('.drop-qty-label');
                         qtyInput.value = qtyMatch[1];
                         qtyInput.style.opacity = '1';
+                        if (qtyLbl) qtyLbl.style.opacity = '1';
                         qtyInput.setAttribute('data-active', 'true');
                     }
                     
                     if (chanceMatch) { 
                         const minInput = currentRow.querySelector('.drop-min');
                         const maxInput = currentRow.querySelector('.drop-max');
+                        const minLbl = currentRow.querySelector('.drop-min-label');
+                        const maxLbl = currentRow.querySelector('.drop-max-label');
                         
                         minInput.value = chanceMatch[1];
                         maxInput.value = chanceMatch[2];
                         
                         minInput.style.opacity = '1';
+                        if (minLbl) minLbl.style.opacity = '1';
                         minInput.setAttribute('data-active', 'true');
+                        
                         maxInput.style.opacity = '1';
+                        if (maxLbl) maxLbl.style.opacity = '1';
                         maxInput.setAttribute('data-active', 'true');
                     }
+                    // ---------------------------------------------------
 
                     const isTool = ['pickaxe', 'hoe', 'shovel', 'sword', 'axe', 'bow', 'shears', 'fishing_rod'].some(tool => itemId.includes(tool));
                     const unbreakContainer = currentRow.querySelector('.drop-unbreak-container');
@@ -1807,7 +1852,7 @@ const healthInput = document.getElementById('inp-health');
         closeModals(); 
         generateCommand();
     }
-
+	
     // --- Mob Inventory UI ---
 
     function switchInventoryTab(tabName, element) {
@@ -1849,6 +1894,19 @@ const healthInput = document.getElementById('inp-health');
             baseImg.style.imageRendering = 'pixelated';
             baseImg.src = item.skinBase64 || `mobs/${item.mob}.png`;
             baseImg.onerror = function() { this.src = `mobs/${item.mob}.png`; };
+            
+            // --- AJUSTE ANTI-DEFORMACIÓN PARA LA TARJETA ---
+            if (['zombie', 'spawnskin'].includes(item.mob)) {
+                baseImg.style.width = '256px';
+                baseImg.style.height = '347px';
+                baseImg.style.objectFit = 'fill';
+            } else {
+                baseImg.style.width = '190%';
+                baseImg.style.height = '260px';
+                baseImg.style.objectFit = 'contain';
+            }
+            // -----------------------------------------------
+
             if (item.tags && item.tags.Baby) {
                  baseImg.style.transform = 'translateX(-50%) scale(0.67)';
             } else {
@@ -1898,6 +1956,10 @@ const healthInput = document.getElementById('inp-health');
         let tagsHtml = ``;
         if (item.tags) {
             for (const [key, val] of Object.entries(item.tags)) {
+                
+                // --- NUEVA REGLA: Ignorar Default Drops en las spawnskins ---
+                if (item.mob === 'spawnskin' && key === 'Default Drops') continue;
+                
                 if (val !== "" && val !== false) {
                     tagsHtml += `<strong>${key}:</strong> ${val}<br>`;
                 }
@@ -1948,6 +2010,63 @@ const healthInput = document.getElementById('inp-health');
         confirmImportCommand();
     }
 
+function exportSavedMobs() {
+        if (savedCommands.length === 0) {
+            alert("No tienes mobs guardados para exportar.");
+            return;
+        }
+        
+        const jsonStr = JSON.stringify(savedCommands, null, 4);
+        const blob = new Blob([jsonStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "mineblocks_mobs_backup.json"; // El nombre del archivo descargado
+        document.body.appendChild(a);
+        a.click();
+        
+        // Limpieza de memoria
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function importSavedMobs(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (!Array.isArray(importedData)) throw new Error("Formato incorrecto");
+
+                // Agregamos los mobs del archivo al arreglo actual asegurando IDs únicos
+                importedData.forEach(item => {
+                    item.id = Date.now() + Math.floor(Math.random() * 1000); 
+                    item.isSaved = true; 
+                    savedCommands.push(item);
+                });
+
+                saveToStorage();
+                updateHotbar();
+                
+                // Refrescamos la interfaz para que aparezcan de inmediato
+                const activeTab = document.querySelector('.inventory-left .tab.active');
+                switchInventoryTab(activeTab.textContent, activeTab);
+                
+                alert(`¡Se importaron ${importedData.length} mobs correctamente!`);
+            } catch (error) {
+                console.error("Error de importación:", error);
+                alert("Hubo un error al leer el archivo. Asegúrate de que sea un backup .json válido.");
+            }
+            
+            // Limpiamos el input para poder importar el mismo archivo de nuevo si se necesita
+            event.target.value = '';
+        };
+        reader.readAsText(file);
+    }
+	
     window.onload = init;
 </script>
 
