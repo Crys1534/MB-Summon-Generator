@@ -134,7 +134,7 @@
         display: flex;
         flex-direction: column;
         max-width: 1100px;
-        margin: 20px auto;
+        margin: 4px auto;
     }
     @media (min-width: 768px) {
         .main-container { flex-direction: row; }
@@ -415,6 +415,7 @@
         align-items: center;
         background-color: #1e1e1e;
         border: 2px solid #111111;
+		padding: 10px;
     }
 
     .drop-item-selector {
@@ -1246,6 +1247,18 @@ function switchItemTab(category, element) {
             const dropRow = activeItemSelector.closest('.drop-row');
             if (dropRow) {
                 const isTool = ['pickaxe', 'hoe', 'shovel', 'sword', 'axe', 'bow', 'shears', 'fishing_rod'].some(tool => itemId.includes(tool));
+				// --- ACTIVADOR DEL COMMAND BOOK ---
+            const cmdContainer = dropRow.querySelector('.drop-cmd-container');
+            if (cmdContainer) {
+                // Si el ítem es command_book, mostramos la interfaz. Si no, la ocultamos y borramos sus datos.
+                if (itemId === 'command_book') {
+                    cmdContainer.style.display = 'flex';
+                } else {
+                    cmdContainer.style.display = 'none';
+                    dropRow.querySelector('.drop-cmd-text').value = '';
+                    dropRow.querySelector('.drop-cmd-uses').value = '';
+                }
+            }
                 const unbreakContainer = dropRow.querySelector('.drop-unbreak-container');
                 if (unbreakContainer) {
                     unbreakContainer.style.display = isTool ? 'inline-flex' : 'none';
@@ -1513,7 +1526,50 @@ function addDrop() {
         unbreakContainer.appendChild(document.createTextNode('Unbreakable'));
 
         row2.append(enchantsRow, unbreakContainer);
-        row.append(row1, row2);
+		// --- CAMPOS EXCLUSIVOS PARA COMMAND BOOK ---
+        const cmdBookContainer = document.createElement('div');
+        cmdBookContainer.className = 'drop-cmd-container';
+        cmdBookContainer.style.display = 'none'; // Oculto por defecto
+        cmdBookContainer.style.width = '100%';
+        cmdBookContainer.style.gap = '10px';
+        cmdBookContainer.style.alignItems = 'center';
+        cmdBookContainer.style.marginTop = '5px';
+
+        const cmdLabel = document.createElement('label');
+        cmdLabel.textContent = 'Command:';
+        cmdLabel.className = 'inline-label';
+
+        const cmdInput = document.createElement('input');
+        cmdInput.type = 'text';
+        cmdInput.className = 'drop-cmd-text';
+        cmdInput.placeholder = '/give carrot 10';
+        cmdInput.style.flex = '2';
+        
+        // --- NUEVO: Conectamos el input al autocompletado ---
+        cmdInput.setAttribute('list', 'cmd-book-list');
+        cmdInput.onfocus = function() { updateCommandSuggestions(this); };
+        cmdInput.oninput = function() {
+            updateCommandSuggestions(this);
+            generateCommand();
+        };
+        // ----------------------------------------------------
+
+        const usesLabel = document.createElement('label');
+        usesLabel.textContent = 'Uses:';
+        usesLabel.className = 'inline-label';
+
+        const usesInput = document.createElement('input');
+        usesInput.type = 'number';
+        usesInput.className = 'drop-cmd-uses';
+        usesInput.placeholder = '∞';
+        usesInput.min = 1;
+        usesInput.style.width = '60px';
+        usesInput.oninput = generateCommand;
+
+        cmdBookContainer.append(cmdLabel, cmdInput, usesLabel, usesInput);
+        
+        // Ahora sí, agregamos las tres filas al drop-row
+        row.append(row1, row2, cmdBookContainer);
         
         container.appendChild(row);
         openItemInventory(selector);
@@ -1666,6 +1722,14 @@ function getDropsData() {
                 if (itemName) itemProps.push(`name:"${itemName}"`);
                 if (isUnbreakable) itemProps.push(`unbreakable:true`);
                 if (enchantsList.length > 0) itemProps.push(`enchantments:[${enchantsList.join(', ')}]`);
+                
+                // --- INYECCIÓN DE DATOS DEL COMMAND BOOK ---
+                if (itemId === 'command_book') {
+                    const cmdText = row.querySelector('.drop-cmd-text').value.trim();
+                    const cmdUses = row.querySelector('.drop-cmd-uses').value;
+                    if (cmdText) itemProps.push(`command:"${cmdText}"`);
+                    if (cmdUses) itemProps.push(`uses:${cmdUses}`);
+                }
                 
                 // Construimos el bloque del Drop dinámicamente
                 let dropParts = [`item:{${itemProps.join(', ')}}`];
@@ -1935,6 +1999,8 @@ function confirmImportCommand() {
                     const unbreakMatch = part.match(/unbreakable:true/);
                     const enchantsMatch = part.match(/enchantments:\[(.*?)\]/);
                     const chanceMatch = part.match(/chance:\{min:([\d.]+),\s*max:([\d.]+)\}/);
+					const cmdBookCmdMatch = part.match(/command:"([^"]+)"/);
+const cmdBookUsesMatch = part.match(/uses:(\d+)/);
 
                     addDrop();
                     const currentRow = document.getElementById('drop-row-' + dropRowCounter);
@@ -1976,6 +2042,14 @@ function confirmImportCommand() {
                         maxInput.setAttribute('data-active', 'true');
                     }
                     // ---------------------------------------------------
+
+// --- CARGAR DATOS IMPORTADOS DEL COMMAND BOOK ---
+                    const cmdContainer = currentRow.querySelector('.drop-cmd-container');
+                    if (cmdContainer && itemId === 'command_book') {
+                        cmdContainer.style.display = 'flex';
+                        if (cmdBookCmdMatch) currentRow.querySelector('.drop-cmd-text').value = cmdBookCmdMatch[1];
+                        if (cmdBookUsesMatch) currentRow.querySelector('.drop-cmd-uses').value = cmdBookUsesMatch[1];
+                    }
 
                     const isTool = ['pickaxe', 'hoe', 'shovel', 'sword', 'axe', 'bow', 'shears', 'fishing_rod'].some(tool => itemId.includes(tool));
                     const unbreakContainer = currentRow.querySelector('.drop-unbreak-container');
@@ -2238,6 +2312,69 @@ function exportSavedMobs() {
             event.target.value = '';
         };
         reader.readAsText(file);
+    }
+	
+	function updateCommandSuggestions(input) {
+        // Creamos la lista dinámica si no existe
+        let datalist = document.getElementById('cmd-book-list');
+        if (!datalist) {
+            datalist = document.createElement('datalist');
+            datalist.id = 'cmd-book-list';
+            document.body.appendChild(datalist);
+        }
+        datalist.innerHTML = ''; // Limpiamos las opciones anteriores
+
+        const val = input.value;
+        const parts = val.split(' ');
+        const base = parts[0].toLowerCase();
+
+        let options = [];
+
+        // 1. Si apenas va a escribir, sugerir los comandos base
+        if (parts.length <= 1) {
+            options = ['/give ', '/setblock ', '/weather set ', '/time ', '/gamemode ', '/tp ', '/heal', '/say '];
+        } 
+        // 2. Si es /time, sugerir el tiempo
+        else if (base === '/time' && parts.length === 2) {
+            options = ['/time day', '/time night'];
+        } 
+        // 3. Si es /gamemode, sugerir los modos
+        else if (base === '/gamemode' && parts.length === 2) {
+            options = ['/gamemode survival', '/gamemode creative', '/gamemode adventure', '/gamemode spectator'];
+        } 
+        // 4. Si es /say, sugerir Hello
+        else if (base === '/say' && parts.length === 2) {
+            options = ['/say Hello'];
+        } 
+        // 5. Autocompletado encadenado para /give
+        else if (base === '/give') {
+            if (parts.length === 2) {
+                // Paso 1: Sugerir todos los items disponibles
+                for (const category in itemsData) {
+                    itemsData[category].forEach(item => {
+                        if (item) options.push(`/give ${item} `);
+                    });
+                }
+            } else if (parts.length === 3 || parts.length === 4) {
+                // Paso 2: Sugerir cantidad y daño "1 0"
+                options.push(`/give ${parts[1]} 1 0 `);
+            } else if (parts.length >= 5) {
+                // Paso 3: Sugerir encantamientos base
+                options.push(`/give ${parts[1]} ${parts[2]} ${parts[3] || '0'} {enchantments:["Unbreaking I"]}`);
+                options.push(`/give ${parts[1]} ${parts[2]} ${parts[3] || '0'} {enchantments:["Sharpness I"]}`);
+            }
+        } 
+        // 6. Si es /weather set, sugerir los climas (Bono extra)
+        else if (base === '/weather' && parts[1] === 'set' && parts.length <= 3) {
+            options = ['/weather set clear', '/weather set rain', '/weather set thunder'];
+        }
+
+        // Inyectar las opciones al navegador
+        options.forEach(opt => {
+            const optionElement = document.createElement('option');
+            optionElement.value = opt;
+            datalist.appendChild(optionElement);
+        });
     }
 	
     window.onload = init;
