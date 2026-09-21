@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mine Blocks /summon Generator</title>
+<title>MB Summon Generator</title>
 <style>
     @font-face {
         font-family: 'Rainy Hearts';
@@ -112,9 +112,9 @@
         color: #ffffff;
         border: 2px solid;
         border-color: #000000 #5a5a5a #5a5a5a #000000;
-        padding: 8px;
+        padding: 2px;
         font-family: 'Rainy Hearts', sans-serif;
-        font-size: 16px;
+        font-size: 18px;
         margin-top: 4px;
         width: 100%;
         box-sizing: border-box;
@@ -133,7 +133,7 @@
     .main-container {
         display: flex;
         flex-direction: column;
-        max-width: 1100px;
+        max-width: 1180px;
         margin: 4px auto;
     }
     @media (min-width: 768px) {
@@ -158,7 +158,7 @@
         display: flex;
         gap: 20px;
         width: 100%;
-        margin-bottom: 15px;
+        margin-bottom: 8px;
     }
     .input-group {
         flex: 1;
@@ -376,8 +376,8 @@
     }
     .item-slot:hover { background-color: #5a5a5a; }
     .item-slot img {
-        width: 48px;
-        height: 48px;
+        width: 64px;
+        height: 64px;
         image-rendering: pixelated;
         object-fit: contain;
     }
@@ -564,6 +564,30 @@
     input[type="number"] {
         -moz-appearance: textfield;
     }
+	
+	/* Menú Autocompletado Flotante */
+    .autocomplete-dropdown {
+        position: absolute;
+        background: #2b2b2b;
+        border: 2px solid #5a5a5a;
+        z-index: 1000;
+        max-height: 200px;
+        overflow-y: auto;
+        display: none;
+        flex-direction: column;
+        min-width: 250px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+    }
+    .autocomplete-item {
+        padding: 6px 10px;
+        cursor: pointer;
+        color: #ffffff;
+        font-family: 'Rainy Hearts', sans-serif;
+        font-size: 18px;
+    }
+    .autocomplete-item:hover {
+        background: #555555;
+    }
 </style>
 </head>
 <body>
@@ -604,10 +628,29 @@
                 <label>Custom Name:</label>
                 <input type="text" id="inp-name" value="Crystal" placeholder="" oninput="generateCommand()">
             </div>
-            <div class="input-group">
-                <label id="lbl-health" style="opacity: 0.33;">Health:</label>
-                <input type="text" inputmode="numeric" id="inp-health" placeholder="20" style="width: 80px; opacity: 0.33;" data-active="false" onfocus="this.style.opacity='1'; document.getElementById('lbl-health').style.opacity='1'; this.setAttribute('data-active', 'true'); generateCommand()" oninput="this.value = this.value.replace(/[^0-9]/g, ''); generateCommand()">
+            
+            <!-- Grupo fusionado: Health + Position + Default Drops -->
+            <div class="input-group" style="flex: 1.5;">
+                <div style="display: flex; gap: 15px; align-items: flex-end;">
+                    
+                    <div style="display: flex; flex-direction: column;">
+                        <label id="lbl-health" style="opacity: 0.33;">Health:</label>
+                        <input type="text" inputmode="numeric" id="inp-health" placeholder="20" style="width: 70px; margin-top: 0; opacity: 0.33;" data-active="false" onfocus="this.style.opacity='1'; document.getElementById('lbl-health').style.opacity='1'; this.setAttribute('data-active', 'true'); generateCommand()" oninput="this.value = this.value.replace(/[^0-9]/g, ''); generateCommand()">
+                    </div>
+
+                    <!-- NUEVO: Campo de POSITION -->
+                    <div style="display: flex; flex-direction: column;">
+                        <label id="lbl-pos" style="opacity: 0.33;">Position:</label>
+                        <input type="text" id="inp-pos" placeholder="X Y" style="width: 80px; margin-top: 0; opacity: 0.33;" data-active="false" onfocus="this.style.opacity='1'; document.getElementById('lbl-pos').style.opacity='1'; this.setAttribute('data-active', 'true'); generateCommand()" oninput="this.value = this.value.replace(/[^0-9~\-\s]/g, ''); generateCommand()">
+                    </div>
+
+                    <label class="inline-label" id="group-defaultDrops" style="margin: 0; margin-bottom: 8px; opacity: 0.33;" data-active="false">
+                        <input type="checkbox" id="inp-defaultDrops" checked autocomplete="off" onchange="document.getElementById('group-defaultDrops').style.opacity='1'; document.getElementById('group-defaultDrops').setAttribute('data-active', 'true'); generateCommand()"> 
+                        Default Drops
+                    </label>
+                </div>
             </div>
+
             <div class="input-group" id="group-skin" style="display: none;">
                 <label>Skin ID:</label>
                 <div style="display: flex;">
@@ -618,10 +661,6 @@
         </div>
         
         <div class="input-row checkboxes-row">
-            <label class="inline-label" id="group-defaultDrops" style="opacity: 0.33;" data-active="false">
-                <input type="checkbox" id="inp-defaultDrops" checked autocomplete="off" onchange="document.getElementById('group-defaultDrops').style.opacity='1'; document.getElementById('group-defaultDrops').setAttribute('data-active', 'true'); generateCommand()"> 
-                Default Drops
-            </label>
             <label class="inline-label" id="group-charged" style="display: none;">
                 <input type="checkbox" id="inp-charged" onchange="generateCommand()"> 
                 Charged
@@ -647,7 +686,7 @@
         </div>
         
         <div class="input-row" style="margin-bottom: 0; align-items: stretch;">
-            <div id="group-armor" class="conditional-group" style="flex: 2; margin-bottom: 15px; display: flex; flex-direction: row; align-items: center; gap: 15px;">
+            <div id="group-armor" class="conditional-group" style="flex: 2; margin-bottom: 8px; display: flex; flex-direction: row; align-items: center; gap: 15px;">
                 <label class="inline-label" style="font-weight:bold; font-size:16px; margin: 0;">
                     <input type="checkbox" id="inp-armor-enable" onchange="toggleArmorInterface(); generateCommand()"> 
                     Armor
@@ -786,8 +825,6 @@
             <div class="tab" onclick="switchItemTab('Tools', this)">Tools</div>
             <div class="tab" onclick="switchItemTab('Armor', this)">Armor</div>
             <div class="tab" onclick="switchItemTab('Food', this)">Food</div>
-            <div class="tab" onclick="switchItemTab('Redstone', this)">Redstone</div>
-            <div class="tab" onclick="switchItemTab('Transportation', this)">Transportation</div>
             <div class="tab" onclick="switchItemTab('Brewing', this)">Brewing</div>
             <div class="tab" onclick="switchItemTab('Miscellaneous', this)">Miscellaneous</div>
         </div>
@@ -881,6 +918,12 @@
         Nether: ['zombie_pigman', 'ghast', 'blaze', 'magma_cube', 'nethereye'],
         End: ['enderman', 'ender_dragon']
     };
+	const mobHealthData = {
+        pig: 10, cow: 10, sheep: 8, chicken: 4, squid: 10, rabbit: 3, bat: 7, wolf: 20, mooshroom: 10, cowctus: 10,
+        zombie: 20, creeper: 20, skeleton: 20, spider: 20, slime: 4, snow_golem: 4, spawnskin: 20,
+        zombie_pigman: 20, ghast: 20, blaze: 20, magma_cube: 4, nethereye: 20,
+        enderman: 40, ender_dragon: 333
+    };
 
 const itemsData = {
         "Blocks": [
@@ -928,18 +971,14 @@ const itemsData = {
             "apple_juice", "lemonade", "orange_juice",
             "rotten_flesh", "spider_eye"
         ],
-        "Redstone": [
-            "redstone", "piston", "piston_sticky", "redstone_torch", "redstone_lamp", 
-            "rail_detector", "rail_powered", "lever", "button", "pressure_plate", "pressure_plate_wooden", "dispenser", "dropper"
-        ],
-        "Transportation": [
-            "minecart", "rail", "minecart_furnace", "minecart_chest", "minecart_tnt", "raft"
-        ],
         "Brewing": [
             "brewing_stand", "potion", "bottle_of_enchanting", "glass_shard"
         ],
         "Miscellaneous": [
-            "diamond", "stick", "topaz", "coal", "charcoal", "iron_ingot", "gold_ingot", 
+            "redstone", "piston", "piston_sticky", "redstone_torch", "redstone_lamp", 
+            "rail_detector", "rail_powered", "lever", "button", "pressure_plate", "pressure_plate_wooden", "dispenser", "dropper",
+			"minecart", "rail", "minecart_furnace", "minecart_chest", "minecart_tnt", "raft",
+			"diamond", "stick", "topaz", "coal", "charcoal", "iron_ingot", "gold_ingot", 
             "ender_pearl", "eye_of_ender", "flint", "string", "feather", "command_book",
         ]
     };
@@ -1015,12 +1054,23 @@ const itemsData = {
 ];
     let activeSidebarMob = null;
 
-    function init() {
+function init() {
         loadFromStorage();
         
         // --- LIMPIEZA FORZADA AL CARGAR LA PÁGINA ---
         document.getElementById('inp-armor-enable').checked = false;
         document.getElementById('inp-name').value = ''; 
+        
+        // ---> NUEVO: Limpieza de Position <---
+        const posInput = document.getElementById('inp-pos');
+        const posLabel = document.getElementById('lbl-pos');
+        if (posInput) {
+            posInput.value = '';
+            posInput.style.opacity = '0.33';
+            posInput.setAttribute('data-active', 'false');
+            if (posLabel) posLabel.style.opacity = '0.33';
+        }
+        // -------------------------------------
         
         const defaultDropsLabel = document.getElementById('group-defaultDrops');
         if (defaultDropsLabel) {
@@ -1028,15 +1078,15 @@ const itemsData = {
             defaultDropsLabel.setAttribute('data-active', 'false');
             document.getElementById('inp-defaultDrops').checked = true;
         }
-		
-		// ---> AQUÍ PEGAS EL CÓDIGO DEL HOLDING ITEM <---
+        
+        // ---> AQUÍ PEGAS EL CÓDIGO DEL HOLDING ITEM <---
         const holdingSelector = document.getElementById('holding-selector');
         if (holdingSelector) {
             holdingSelector.setAttribute('data-item-id', '');
             holdingSelector.querySelector('img').src = emptyPixel;
         }
         // ---------------------------------------------
-		
+        
         switchTab('Overworld', document.querySelector('#inv-modal .tab:nth-child(2)'));
         updateVisibility();
         switchItemTab('Blocks', document.querySelector('#item-tabs .tab'));
@@ -1056,7 +1106,7 @@ const itemsData = {
             }
         });
     }
-
+	
     function closeInventory() { 
         document.getElementById('inv-modal').style.display = 'none'; 
     }
@@ -1187,6 +1237,12 @@ const itemsData = {
         imgEl.src = `mobs/${mob}.png`;
         imgEl.style.display = 'block'; 
         document.getElementById('mob-name-display').textContent = mob.replace('_', ' ').toUpperCase();
+
+        // --- NUEVO: Actualiza el placeholder con la vida base ---
+        const defaultHealth = mobHealthData[mob] || 20; // Si no lo encuentra, asume 20
+        document.getElementById('inp-health').placeholder = defaultHealth;
+        // --------------------------------------------------------
+
         closeInventory();
         updateVisibility();
         generateCommand();
@@ -1542,17 +1598,13 @@ function addDrop() {
         const cmdInput = document.createElement('input');
         cmdInput.type = 'text';
         cmdInput.className = 'drop-cmd-text';
-        cmdInput.placeholder = '/give carrot 10';
+        cmdInput.placeholder = '/give carrot 1 0';
         cmdInput.style.flex = '2';
         
-        // --- NUEVO: Conectamos el input al autocompletado ---
-        cmdInput.setAttribute('list', 'cmd-book-list');
-        cmdInput.onfocus = function() { updateCommandSuggestions(this); };
-        cmdInput.oninput = function() {
-            updateCommandSuggestions(this);
-            generateCommand();
-        };
-        // ----------------------------------------------------
+        // --- VÍNCULO AL NUEVO AUTOCOMPLETADO ---
+        cmdInput.onfocus = function() { handleAutocomplete(this); };
+        cmdInput.oninput = function() { handleAutocomplete(this); generateCommand(); };
+        cmdInput.onblur = function() { setTimeout(() => closeAutocomplete(), 200); };
 
         const usesLabel = document.createElement('label');
         usesLabel.textContent = 'Uses:';
@@ -1727,7 +1779,7 @@ function getDropsData() {
                 if (itemId === 'command_book') {
                     const cmdText = row.querySelector('.drop-cmd-text').value.trim();
                     const cmdUses = row.querySelector('.drop-cmd-uses').value;
-                    if (cmdText) itemProps.push(`command:"${cmdText}"`);
+                    if (cmdText) itemProps.push(`command:'${cmdText}'`);
                     if (cmdUses) itemProps.push(`uses:${cmdUses}`);
                 }
                 
@@ -1746,12 +1798,12 @@ function getDropsData() {
         });
         return dropsArray;
     }
-	
-    function generateCommand() {
+
+function generateCommand() {
         let tags = [];
         const name = document.getElementById('inp-name').value.trim();
         if (name) tags.push(`name:"${name}"`);
-const healthInput = document.getElementById('inp-health');
+        const healthInput = document.getElementById('inp-health');
         const healthVal = healthInput.value;
         if (healthInput.getAttribute('data-active') === 'true' && healthVal) {
             tags.push(`health:${healthVal}`);
@@ -1812,13 +1864,20 @@ const healthInput = document.getElementById('inp-health');
         const dropsArray = getDropsData();
         if (dropsArray.length > 0) tags.push(`drops:[${dropsArray.join(', ')}]`);
         
+        // --- LECTURA DE LA POSICIÓN ---
+        let posInput = document.getElementById('inp-pos');
+        let posVal = "~ ~"; // Por defecto
+        if (posInput.getAttribute('data-active') === 'true' && posInput.value.trim() !== '') {
+            posVal = posInput.value.trim();
+        }
+        
         let tagsString = tags.length > 0 ? ` {${tags.join(', ')}}` : '';
-        let cmd = `/summon ${selectedMob} 1 ~ ~${tagsString}`;
+        let cmd = `/summon ${selectedMob} 1 ${posVal}${tagsString}`;
         
         document.getElementById('output-command').textContent = cmd;
         return cmd; 
     }
-
+	
     // --- Save & Import Systems ---
 
     function confirmSaveCommand() {
@@ -1842,6 +1901,7 @@ const healthInput = document.getElementById('inp-health');
             tags: {
                 Name: document.getElementById('inp-name').value.trim(),
                 Health: document.getElementById('inp-health').value,
+                Position: document.getElementById('inp-pos').getAttribute('data-active') === 'true' ? document.getElementById('inp-pos').value.trim() : "~ ~",
                 Aggro: document.getElementById('inp-aggro').value,
                 Color: document.getElementById('inp-color').value,
                 Holding: document.getElementById('holding-selector').getAttribute('data-item-id'),
@@ -1898,15 +1958,35 @@ function confirmImportCommand() {
         let cmd = document.getElementById('inp-import-cmd').value.trim();
         cmd = cmd.replace(/[\u2800\u200B]/g, ''); 
         
-        const mobMatch = cmd.match(/^\/?summon\s+([a-zA-Z0-9_]+)/i);
-        if (!mobMatch) {
+        // Detecta el mob y también captura X e Y si existen
+        const summonMatch = cmd.match(/^\/?summon\s+([a-zA-Z0-9_]+)(?:\s+\d+\s+([~0-9\-.]+)\s+([~0-9\-.]+))?/i);
+        if (!summonMatch) {
             alert("Comando inválido. Debe empezar con /summon [mob] o summon [mob]");
             return;
         }
 
         document.getElementById('drops-container').innerHTML = '';
         dropRowCounter = 0;
-        selectMob(mobMatch[1]);
+        selectMob(summonMatch[1]);
+        
+        // --- ACTUALIZACIÓN DE POSICIÓN ---
+        const posInput = document.getElementById('inp-pos');
+        const posLabel = document.getElementById('lbl-pos');
+        if (summonMatch[2] && summonMatch[3]) {
+            const posX = summonMatch[2];
+            const posY = summonMatch[3];
+            if (posX !== '~' || posY !== '~') {
+                posInput.value = posX + ' ' + posY;
+                posInput.style.opacity = '1';
+                if(posLabel) posLabel.style.opacity = '1';
+                posInput.setAttribute('data-active', 'true');
+            } else {
+                posInput.value = '';
+                posInput.style.opacity = '0.5';
+                if(posLabel) posLabel.style.opacity = '0.5';
+                posInput.setAttribute('data-active', 'false');
+            }
+        }
         
         const extractStr = (key) => { const m = cmd.match(new RegExp(`${key}:"([^"]+)"`)); return m ? m[1] : ''; };
         const extractNum = (key) => { const m = cmd.match(new RegExp(`${key}:(\\d+)`)); return m ? m[1] : ''; };
@@ -2214,6 +2294,14 @@ const cmdBookUsesMatch = part.match(/uses:(\d+)/);
         }
         if (item.skinId) tagsHtml += `<strong>Skin ID:</strong> ${item.skinId}<br>`;
 
+// --- EXTRAER COMANDO DEL COMMAND BOOK ---
+        if (item.command.includes('id:"command_book"')) {
+            const cmdMatch = item.command.match(/command:['"]([^'"]+)['"]/);
+            const usesMatch = item.command.match(/uses:(\d+)/);
+            if (cmdMatch) tagsHtml += `<br><strong style="color:#55ff55;">Book Cmd:</strong> <span style="font-size:16px;">${cmdMatch[1]}</span><br>`;
+            if (usesMatch) tagsHtml += `<strong style="color:#55ff55;">Book Uses:</strong> ${usesMatch[1]}<br>`;
+        }
+		
         document.getElementById('sidebar-title').textContent = item.name;
         document.getElementById('sidebar-info').innerHTML = tagsHtml;
         
@@ -2314,67 +2402,179 @@ function exportSavedMobs() {
         reader.readAsText(file);
     }
 	
-	function updateCommandSuggestions(input) {
-        // Creamos la lista dinámica si no existe
-        let datalist = document.getElementById('cmd-book-list');
-        if (!datalist) {
-            datalist = document.createElement('datalist');
-            datalist.id = 'cmd-book-list';
-            document.body.appendChild(datalist);
+
+	let autocompleteDiv = null;
+
+    function closeAutocomplete() {
+        if (autocompleteDiv) autocompleteDiv.style.display = 'none';
+    }
+
+function handleAutocomplete(input) {
+        if (!autocompleteDiv) {
+            autocompleteDiv = document.createElement('div');
+            autocompleteDiv.className = 'autocomplete-dropdown mc-ui-inset';
+            document.body.appendChild(autocompleteDiv);
         }
-        datalist.innerHTML = ''; // Limpiamos las opciones anteriores
 
-        const val = input.value;
-        const parts = val.split(' ');
-        const base = parts[0].toLowerCase();
+        const fullText = input.value;
+        const cursorPosition = input.selectionStart;
+        const textUpToCursor = fullText.substring(0, cursorPosition);
+        
+        let suggestions = [];
+        let replaceStart = 0;
+        let prefixToKeep = "";
 
-        let options = [];
+        // 1. Detección Inteligente de Encantamientos
+        const enchMatch = textUpToCursor.match(/enchantments:\[(.*)$/i);
+        
+        if (enchMatch) {
+            const enchContent = enchMatch[1];
+            const enchParts = enchContent.split(',');
+            const lastPart = enchParts[enchParts.length - 1]; 
+            
+            replaceStart = textUpToCursor.length - lastPart.length;
+            prefixToKeep = textUpToCursor.substring(0, replaceStart);
+            
+            const currentEnchTyping = lastPart.replace(/['"]/g, '').trimLeft();
+            
+            const allEnchants = [
+                "Unbreaking I", "Unbreaking II", "Unbreaking III", "Unbreaking IV",
+                "Protection I", "Protection II", "Protection III", "Protection IV", "Protection V",
+                "Fire Protection I", "Fire Protection II", "Fire Protection III",
+                "Blast Protection I", "Blast Protection II", "Blast Protection III",
+                "Projectile Protection I", "Projectile Protection II", "Projectile Protection III",
+                "Feather Falling I", "Feather Falling II", "Feather Falling III",
+                "Depth Strider I", "Depth Strider II", "Depth Strider III",
+                "Frost Walker I", "Frost Walker II",
+                "Thorns I", "Thorns II", "Thorns III",
+                "Respiration I", "Respiration II", "Respiration III",
+                "Aqua Affinity I",
+                "Sharpness I", "Sharpness II", "Sharpness III", "Sharpness IV",
+                "Smite I", "Smite II", "Smite III", "Smite IV",
+                "Bane of Arthropods I", "Bane of Arthropods II", "Bane of Arthropods III",
+                "Knockback I", "Knockback II", "Knockback III",
+                "Fire Aspect I",
+                "Looting I", "Looting II", "Looting III",
+                "Efficiency I", "Efficiency II",
+                "Silk Touch I",
+                "Fortune I", "Fortune II", "Fortune III",
+                "Power I", "Power II", "Power III",
+                "Punch I", "Punch II",
+                "Flame I",
+                "Infinity I",
+                "Lure I", "Lure II", "Lure III",
+                "Luck of the Sea I", "Luck of the Sea II", "Luck of the Sea III"
+            ];
+            
+            suggestions = allEnchants.filter(e => e.toLowerCase().startsWith(currentEnchTyping.toLowerCase()));
+            
+            suggestions = suggestions.map(s => {
+                const space = lastPart.startsWith(' ') ? ' ' : '';
+                return space + "'" + s + "'";
+            });
+        } 
+        // 2. Detección de comandos y Rutas de Opciones
+        else {
+            const parts = textUpToCursor.split(' ');
+            const currentWord = parts[parts.length - 1];
+            replaceStart = textUpToCursor.lastIndexOf(currentWord);
+            prefixToKeep = textUpToCursor.substring(0, replaceStart);
 
-        // 1. Si apenas va a escribir, sugerir los comandos base
-        if (parts.length <= 1) {
-            options = ['/give ', '/setblock ', '/weather set ', '/time ', '/gamemode ', '/tp ', '/heal', '/say '];
-        } 
-        // 2. Si es /time, sugerir el tiempo
-        else if (base === '/time' && parts.length === 2) {
-            options = ['/time day', '/time night'];
-        } 
-        // 3. Si es /gamemode, sugerir los modos
-        else if (base === '/gamemode' && parts.length === 2) {
-            options = ['/gamemode survival', '/gamemode creative', '/gamemode adventure', '/gamemode spectator'];
-        } 
-        // 4. Si es /say, sugerir Hello
-        else if (base === '/say' && parts.length === 2) {
-            options = ['/say Hello'];
-        } 
-        // 5. Autocompletado encadenado para /give
-        else if (base === '/give') {
-            if (parts.length === 2) {
-                // Paso 1: Sugerir todos los items disponibles
-                for (const category in itemsData) {
-                    itemsData[category].forEach(item => {
-                        if (item) options.push(`/give ${item} `);
-                    });
+            if (parts.length === 1) {
+                // TODOS LOS COMANDOS
+                const baseCommands = [
+                    '/clear', '/clone', '/difficulty',
+                    '/enchant', '/fill', '/gamemode', '/gamerule', '/give', '/heal', 
+                    '/help', '/kill', '/say', '/setblock', 
+                    '/summon', '/tp', '/time', '/weather', '/xp'
+                ];
+                suggestions = baseCommands.filter(c => c.startsWith(currentWord.toLowerCase())).map(s => s + " ");
+            } else {
+                const base = parts[0].toLowerCase();
+                
+                // --- RUTAS DE AUTOCOMPLETADO ---
+                if (base === '/give') {
+                    if (parts.length === 2) {
+                        let allItems = [];
+                        for (const cat in itemsData) allItems = allItems.concat(itemsData[cat].filter(i=>i));
+                        suggestions = allItems.filter(i => i.toLowerCase().startsWith(currentWord.toLowerCase())).map(s => s + " ");
+                    } else if (parts.length === 3 && "1 0".startsWith(currentWord)) {
+                        suggestions = ["1 0 "];
+                    } else if (parts.length >= 4) {
+                        const possibleTags = ["{name:\"", "{enchantments:['", "name:\"", "enchantments:['"];
+                        suggestions = possibleTags.filter(t => t.startsWith(currentWord));
+                    }
+                } 
+                else if (base === '/difficulty' && parts.length === 2) {
+                    suggestions = ['peaceful ', 'easy ', 'normal ', 'hard '].filter(s => s.startsWith(currentWord.toLowerCase()));
+                } 
+                else if (base === '/gamemode' && parts.length === 2) {
+                    suggestions = ['survival ', 'creative ', 'adventure ', 'spectator '].filter(s => s.startsWith(currentWord.toLowerCase()));
+                } 
+                else if (base === '/gamerule') {
+                    if (parts.length === 2) {
+                        const rules = ['keepinventory ', 'dodaylightcycle ', 'dofiretick ', 'domobloot ', 'sendcommandfeedback '];
+                        suggestions = rules.filter(s => s.startsWith(currentWord.toLowerCase()));
+                    } else if (parts.length === 3) {
+                        suggestions = ['true ', 'false '].filter(s => s.startsWith(currentWord.toLowerCase()));
+                    }
+                } 
+                else if (base === '/time') {
+                    if (parts.length === 2) {
+                        suggestions = ['get ', 'set '].filter(s => s.startsWith(currentWord.toLowerCase()));
+                    } else if (parts.length === 3 && parts[1].toLowerCase() === 'set') {
+                        suggestions = ['day ', 'night '].filter(s => s.startsWith(currentWord.toLowerCase()));
+                    }
+                } 
+                else if (base === '/weather') {
+                    if (parts.length === 2) {
+                        suggestions = ['get ', 'set '].filter(s => s.startsWith(currentWord.toLowerCase()));
+                    } else if (parts.length === 3 && parts[1].toLowerCase() === 'set') {
+                        suggestions = ['clear ', 'rain ', 'thunder '].filter(s => s.startsWith(currentWord.toLowerCase()));
+                    }
+                } 
+                else if (base === '/say' && parts.length === 2) {
+                    suggestions = ['Hello '].filter(s => s.startsWith(currentWord));
                 }
-            } else if (parts.length === 3 || parts.length === 4) {
-                // Paso 2: Sugerir cantidad y daño "1 0"
-                options.push(`/give ${parts[1]} 1 0 `);
-            } else if (parts.length >= 5) {
-                // Paso 3: Sugerir encantamientos base
-                options.push(`/give ${parts[1]} ${parts[2]} ${parts[3] || '0'} {enchantments:["Unbreaking I"]}`);
-                options.push(`/give ${parts[1]} ${parts[2]} ${parts[3] || '0'} {enchantments:["Sharpness I"]}`);
             }
-        } 
-        // 6. Si es /weather set, sugerir los climas (Bono extra)
-        else if (base === '/weather' && parts[1] === 'set' && parts.length <= 3) {
-            options = ['/weather set clear', '/weather set rain', '/weather set thunder'];
         }
 
-        // Inyectar las opciones al navegador
-        options.forEach(opt => {
-            const optionElement = document.createElement('option');
-            optionElement.value = opt;
-            datalist.appendChild(optionElement);
+        // Si ya no hay más sugerencias en esta ruta, se cierra el menú automáticamente.
+        if (suggestions.length === 0) {
+            closeAutocomplete();
+            return;
+        }
+
+        autocompleteDiv.innerHTML = '';
+        suggestions.forEach(sug => {
+            const div = document.createElement('div');
+            div.className = 'autocomplete-item';
+            div.textContent = sug;
+            
+            div.onmousedown = function(e) {
+                e.preventDefault(); 
+                const afterCursor = fullText.substring(cursorPosition);
+                
+                input.value = prefixToKeep + sug + afterCursor;
+                
+                const newCursorPos = prefixToKeep.length + sug.length;
+                input.setSelectionRange(newCursorPos, newCursorPos);
+                
+                generateCommand();
+                
+                // ¡AQUÍ ESTÁ LA MAGIA!
+                // En lugar de closeAutocomplete(), volvemos a llamar a la función
+                // para que evalúe el nuevo texto y muestre las siguientes sugerencias al instante.
+                handleAutocomplete(input); 
+            };
+            autocompleteDiv.appendChild(div);
         });
+
+        const rect = input.getBoundingClientRect();
+        autocompleteDiv.style.left = rect.left + window.scrollX + 'px';
+        autocompleteDiv.style.top = rect.bottom + window.scrollY + 'px';
+        autocompleteDiv.style.width = rect.width + 'px';
+        autocompleteDiv.style.display = 'flex';
     }
 	
     window.onload = init;
